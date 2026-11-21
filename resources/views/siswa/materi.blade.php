@@ -3,27 +3,26 @@
 @section('title', 'Materi Belajar')
 
 @section('content')
-<section class="grid lg:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
-    <div class="lg:col-span-8">
+<section class="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-10 border-b border-ink">
+    <div class="max-w-2xl">
         <p class="text-sm text-ink-faint mb-3">Repositori Bacaan · Layanan BK SMP</p>
         <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
             Materi <span class="marker italic">manajemen waktu.</span>
         </h1>
-        <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+        <p class="mt-4 text-base text-ink-soft leading-relaxed">
             Panduan singkat yang mudah dipraktikkan untuk memulai tugas tanpa menunggu mood dan
             mengatur waktu belajar harian.
         </p>
     </div>
-    <div class="lg:col-span-4 lg:text-right">
-        <a href="{{ $workspaceLinks['gdrive'] }}" target="_blank" rel="noopener noreferrer"
-           class="inline-block px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-sm font-semibold transition-colors">
-            Buka Folder Google Drive ↗
-        </a>
-    </div>
+
+    <a href="{{ $workspaceLinks['gdrive'] }}" target="_blank" rel="noopener noreferrer"
+       class="self-start xl:self-auto px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-sm font-semibold transition-colors shrink-0">
+        Buka Folder Google Drive ↗
+    </a>
 </section>
 
-<div class="mt-12 grid md:grid-cols-2 gap-8">
-    <article class="bg-sheet border border-rule p-7 sm:p-10 flex flex-col justify-between space-y-8">
+<div class="mt-10 grid md:grid-cols-2 gap-8 items-stretch">
+    <article class="bg-sheet border border-rule p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-ink/40 transition-colors">
         <div class="space-y-4">
             <div class="flex items-baseline justify-between pb-4 border-b border-ink">
                 <span class="font-serif text-4xl text-accent leading-none">01</span>
@@ -46,7 +45,7 @@
         </div>
     </article>
 
-    <article class="bg-sheet border border-rule p-7 sm:p-10 flex flex-col justify-between space-y-8">
+    <article class="bg-sheet border border-rule p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-ink/40 transition-colors">
         <div class="space-y-4">
             <div class="flex items-baseline justify-between pb-4 border-b border-ink">
                 <span class="font-serif text-4xl text-accent leading-none">02</span>

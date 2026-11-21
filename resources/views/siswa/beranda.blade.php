@@ -4,8 +4,8 @@
 
 @section('content')
 {{-- Pembuka Beranda: Grid 12 kolom selaras dengan landing page --}}
-<section class="grid lg:grid-cols-12 gap-8 lg:gap-12 pb-12 border-b border-ink items-end">
-    <div class="lg:col-span-7">
+<section class="grid xl:grid-cols-12 gap-8 xl:gap-10 pb-10 border-b border-ink items-end">
+    <div class="xl:col-span-7">
         <p class="text-sm text-ink-faint mb-3">{{ $student->kelas }} · Jurnal Belajar Mandiri</p>
 
         <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <div class="lg:col-span-4 lg:col-start-9 bg-sheet border border-rule p-6 sm:p-7">
+    <div class="xl:col-span-4 xl:col-start-9 bg-sheet border border-rule p-6 sm:p-7">
         <p class="text-xs font-medium uppercase tracking-[0.12em] text-ink-faint">Kemajuan Minggu Ini</p>
         <div class="mt-3 flex items-baseline gap-2.5">
             <span class="font-serif text-5xl text-ink leading-none">{{ $doneTasks }}</span>
@@ -43,19 +43,19 @@
 </section>
 
 {{-- Lembar Jurnal: Siklus 4 langkah di atas permukaan bg-sheet --}}
-<section class="mt-12 bg-sheet border border-rule p-6 sm:p-10 lg:p-12">
-    <div class="grid lg:grid-cols-12 gap-6 mb-10">
-        <h2 class="lg:col-span-5 font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink">
+<section class="mt-10 bg-sheet border border-rule p-6 sm:p-9 xl:p-11">
+    <div class="grid xl:grid-cols-12 gap-6 mb-9">
+        <h2 class="xl:col-span-5 font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink">
             Siklus belajar mingguanmu
         </h2>
-        <p class="lg:col-span-6 lg:col-start-7 text-sm text-ink-soft leading-relaxed">
+        <p class="xl:col-span-6 xl:col-start-7 text-sm text-ink-soft leading-relaxed">
             Mengikuti siklus belajar mandiri Zimmerman (2002): merencanakan tugas, mengerjakan dengan
             fokus singkat, lalu melihat ke belakang sebentar di akhir minggu.
         </p>
     </div>
 
-    <ol class="grid sm:grid-cols-2 lg:grid-cols-4 border-t border-ink">
-        <li class="pt-6 pb-4 sm:pr-8 lg:border-r border-rule flex flex-col justify-between">
+    <ol class="grid sm:grid-cols-2 xl:grid-cols-4 border-t border-ink">
+        <li class="pt-6 pb-5 sm:pr-7 sm:border-r border-rule flex flex-col justify-between">
             <div>
                 <span class="font-serif text-5xl text-accent leading-none">1</span>
                 <h3 class="mt-5 text-lg font-semibold text-ink">Rencanakan</h3>
@@ -69,7 +69,7 @@
             </a>
         </li>
 
-        <li class="pt-6 pb-4 lg:px-8 lg:border-r border-rule border-t sm:border-t-0 flex flex-col justify-between">
+        <li class="pt-6 pb-5 sm:pl-7 xl:px-7 xl:border-r border-rule border-t sm:border-t-0 flex flex-col justify-between">
             <div>
                 <span class="font-serif text-5xl text-accent leading-none">2</span>
                 <h3 class="mt-5 text-lg font-semibold text-ink">Kerjakan</h3>
@@ -83,7 +83,7 @@
             </a>
         </li>
 
-        <li class="pt-6 pb-4 sm:pr-8 lg:px-8 lg:border-r border-rule border-t lg:border-t-0 flex flex-col justify-between">
+        <li class="pt-6 pb-5 sm:pr-7 xl:px-7 sm:border-r border-rule border-t xl:border-t-0 flex flex-col justify-between">
             <div>
                 <span class="font-serif text-5xl text-accent leading-none">3</span>
                 <h3 class="mt-5 text-lg font-semibold text-ink">Renungkan</h3>
@@ -97,7 +97,7 @@
             </a>
         </li>
 
-        <li class="pt-6 pb-4 lg:pl-8 border-t lg:border-t-0 border-rule flex flex-col justify-between">
+        <li class="pt-6 pb-5 sm:pl-7 border-t xl:border-t-0 border-rule flex flex-col justify-between">
             <div>
                 <span class="font-serif text-5xl text-accent leading-none">4</span>
                 <h3 class="mt-5 text-lg font-semibold text-ink">Ngobrol dengan Guru BK</h3>

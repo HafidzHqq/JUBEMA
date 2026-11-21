@@ -11,6 +11,7 @@ use App\Support\ConsultationFormConfig;
 use App\Support\StudentSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -42,69 +43,81 @@ class AdminController extends Controller
 
     public function updateConsultationForm(Request $request): RedirectResponse
     {
-        $cleanList = static function (mixed $values): array {
-            if (! is_array($values)) {
-                return [];
+        $rawQuestions = $request->input('questions', []);
+        $cleanedQuestions = [];
+
+        if (is_array($rawQuestions)) {
+            foreach (array_values($rawQuestions) as $q) {
+                if (! is_array($q)) {
+                    continue;
+                }
+
+                $type = trim((string) ($q['type'] ?? 'text'));
+                $options = [];
+                if (is_array($q['options'] ?? null)) {
+                    $options = array_values(array_unique(array_filter(array_map(
+                        static fn ($item) => trim((string) $item),
+                        $q['options']
+                    ), static fn (string $item) => $item !== '')));
+                }
+
+                $cleanedQuestions[] = [
+                    'id' => trim((string) ($q['id'] ?? '')),
+                    'label' => trim((string) ($q['label'] ?? '')),
+                    'type' => $type,
+                    'required' => ! empty($q['required']),
+                    'options' => $options,
+                    'allow_other' => $type === 'radio' && ! empty($q['allow_other']),
+                    'min_label' => trim((string) ($q['min_label'] ?? '')),
+                    'max_label' => trim((string) ($q['max_label'] ?? '')),
+                    'placeholder' => trim((string) ($q['placeholder'] ?? '')),
+                ];
             }
+        }
 
-            return array_values(array_unique(array_filter(array_map(
-                static fn ($item) => trim((string) $item),
-                $values
-            ), static fn (string $item) => $item !== '')));
-        };
+        $request->merge(['questions' => $cleanedQuestions]);
 
-        $request->merge([
-            'q1_options' => $cleanList($request->input('q1_options', [])),
-            'q3_options' => $cleanList($request->input('q3_options', [])),
-            'q4_options' => $cleanList($request->input('q4_options', [])),
-            'q5_options' => $cleanList($request->input('q5_options', [])),
-            'q6_options' => $cleanList($request->input('q6_options', [])),
-        ]);
+        $allowedTypes = array_keys(ConsultationFormConfig::QUESTION_TYPES);
 
         $validated = $request->validate([
             'intro' => ['required', 'string', 'max:1000'],
-            'q1_label' => ['required', 'string', 'max:250'],
-            'q1_options' => ['required', 'array', 'min:1', 'max:15'],
-            'q1_options.*' => ['required', 'string', 'max:200'],
-            'q1_allow_other' => ['nullable', 'boolean'],
-            'q2_label' => ['required', 'string', 'max:250'],
-            'q2_min_label' => ['required', 'string', 'max:100'],
-            'q2_max_label' => ['required', 'string', 'max:100'],
-            'q3_label' => ['required', 'string', 'max:250'],
-            'q3_options' => ['required', 'array', 'min:1', 'max:15'],
-            'q3_options.*' => ['required', 'string', 'max:200'],
-            'q4_label' => ['required', 'string', 'max:250'],
-            'q4_options' => ['required', 'array', 'min:1', 'max:10'],
-            'q4_options.*' => ['required', 'string', 'max:120'],
-            'q5_label' => ['required', 'string', 'max:250'],
-            'q5_options' => ['required', 'array', 'min:1', 'max:10'],
-            'q5_options.*' => ['required', 'string', 'max:120'],
-            'q6_label' => ['required', 'string', 'max:250'],
-            'q6_options' => ['required', 'array', 'min:1', 'max:10'],
-            'q6_options.*' => ['required', 'string', 'max:120'],
-            'note_label' => ['required', 'string', 'max:150'],
-            'note_placeholder' => ['required', 'string', 'max:250'],
+            'questions' => ['required', 'array', 'min:1', 'max:25'],
+            'questions.*.id' => ['nullable', 'string', 'max:60'],
+            'questions.*.label' => ['required', 'string', 'max:250'],
+            'questions.*.type' => ['required', Rule::in($allowedTypes)],
+            'questions.*.required' => ['boolean'],
+            'questions.*.options' => ['array', 'max:15'],
+            'questions.*.options.*' => ['required', 'string', 'max:200'],
+            'questions.*.allow_other' => ['boolean'],
+            'questions.*.min_label' => ['nullable', 'string', 'max:100'],
+            'questions.*.max_label' => ['nullable', 'string', 'max:100'],
+            'questions.*.placeholder' => ['nullable', 'string', 'max:250'],
         ], [
             'intro.required' => 'Teks pengantar formulir wajib diisi.',
-            'q1_label.required' => 'Pertanyaan 1 wajib diisi.',
-            'q1_options.min' => 'Pertanyaan 1 minimal memiliki 1 pilihan.',
-            'q2_label.required' => 'Pertanyaan 2 wajib diisi.',
-            'q3_label.required' => 'Pertanyaan 3 wajib diisi.',
-            'q3_options.min' => 'Pertanyaan 3 minimal memiliki 1 pilihan.',
-            'q4_label.required' => 'Pertanyaan 4 wajib diisi.',
-            'q4_options.min' => 'Pertanyaan 4 minimal memiliki 1 pilihan.',
-            'q5_label.required' => 'Pertanyaan 5 wajib diisi.',
-            'q5_options.min' => 'Pertanyaan 5 minimal memiliki 1 pilihan.',
-            'q6_label.required' => 'Pertanyaan 6 wajib diisi.',
-            'q6_options.min' => 'Pertanyaan 6 minimal memiliki 1 pilihan.',
+            'questions.required' => 'Formulir minimal harus memiliki 1 pertanyaan.',
+            'questions.min' => 'Formulir minimal harus memiliki 1 pertanyaan.',
+            'questions.*.label.required' => 'Semua teks pertanyaan wajib diisi.',
+            'questions.*.type.in' => 'Jenis pertanyaan tidak valid.',
         ]);
 
-        ConsultationFormConfig::save([
-            ...$validated,
-            'q1_allow_other' => $request->boolean('q1_allow_other'),
-        ]);
+        // Validasi tambahan khusus tipe Pilihan Ganda & Skala
+        foreach ($validated['questions'] as $index => $q) {
+            $num = $index + 1;
+            if ($q['type'] === 'radio' && count($q['options'] ?? []) < 1) {
+                return back()
+                    ->withErrors(["questions.{$index}.options" => "Pertanyaan #{$num} (Pilihan Ganda) minimal harus memiliki 1 pilihan jawaban."])
+                    ->withInput();
+            }
+            if ($q['type'] === 'scale' && (blank($q['min_label'] ?? null) || blank($q['max_label'] ?? null))) {
+                return back()
+                    ->withErrors(["questions.{$index}.min_label" => "Pertanyaan #{$num} (Skala 1–4) wajib memiliki keterangan skala terendah dan tertinggi."])
+                    ->withInput();
+            }
+        }
 
-        return back()->with('success', 'Pertanyaan Formulir Konsultasi berhasil diperbarui!');
+        ConsultationFormConfig::save($validated);
+
+        return back()->with('success', 'Formulir Konsultasi berhasil diperbarui!');
     }
 
     public function resetConsultationForm(): RedirectResponse
@@ -232,21 +245,45 @@ class AdminController extends Controller
     }
 
     /**
-     * Tandai permintaan konsultasi "Sudah Dijadwalkan".
+     * Atur, ubah, atau batalkan jadwal konsultasi (tanggal, waktu, tempat, catatan).
      */
     public function markConsultation(Request $request, Consultation $consultation): RedirectResponse
     {
-        $consultation->status = $consultation->status === 'sudah_dijadwalkan'
-            ? 'menunggu_jadwal_bk'
-            : 'sudah_dijadwalkan';
+        if ($request->input('action') === 'cancel') {
+            $consultation->status = 'menunggu_jadwal_bk';
+            $consultation->scheduled_at = null;
+            $consultation->scheduled_location = null;
+            $consultation->scheduled_note = null;
+            $consultation->save();
 
-        $consultation->scheduled_at = $consultation->status === 'sudah_dijadwalkan'
-            ? now()
+            return back()->with('info', 'Jadwal konsultasi dibatalkan.');
+        }
+
+        $validated = $request->validate([
+            'scheduled_date' => ['required', 'date'],
+            'scheduled_time' => ['required', 'date_format:H:i'],
+            'scheduled_location' => ['required', 'string', 'max:150'],
+            'scheduled_note' => ['nullable', 'string', 'max:300'],
+        ], [
+            'scheduled_date.required' => 'Tanggal konsultasi wajib diisi.',
+            'scheduled_date.date' => 'Format tanggal konsultasi tidak valid.',
+            'scheduled_time.required' => 'Jam konsultasi wajib diisi.',
+            'scheduled_time.date_format' => 'Format jam konsultasi harus HH:MM.',
+            'scheduled_location.required' => 'Tempat atau tautan konsultasi wajib diisi.',
+        ]);
+
+        $consultation->status = 'sudah_dijadwalkan';
+        $consultation->scheduled_at = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['scheduled_date'].' '.$validated['scheduled_time']
+        );
+        $consultation->scheduled_location = trim($validated['scheduled_location']);
+        $consultation->scheduled_note = filled($validated['scheduled_note'] ?? null)
+            ? trim((string) $validated['scheduled_note'])
             : null;
-
         $consultation->save();
 
-        return back()->with('success', 'Status konsultasi diperbarui.');
+        return back()->with('success', 'Jadwal konsultasi berhasil disimpan!');
     }
 
     /**
@@ -317,21 +354,23 @@ class AdminController extends Controller
             });
 
             Consultation::with('student')->latest()->get()->each(function (Consultation $k) use ($out) {
-                $details = array_filter([
-                    $k->difficulty ? "Kesulitan: {$k->difficulty}" : null,
-                    $k->focus_level ? "Fokus: {$k->focus_level}/4" : null,
-                    $k->bring_journal ? "Catatan jurnal: {$k->bring_journal}" : null,
-                    $k->mode ? "Waktu: {$k->mode}" : null,
-                    $k->consultation_method ? "Cara pendampingan: {$k->consultation_method}" : null,
-                    $k->message ? "Catatan: {$k->message}" : null,
-                ]);
+                $details = [];
+                foreach ($k->formattedAnswers() as $ans) {
+                    $details[] = "{$ans['label']}: {$ans['value']}";
+                }
+                if ($k->scheduled_at) {
+                    $details[] = 'Jadwal: '.$k->scheduled_at->translatedFormat('d M Y, H:i');
+                }
+                if (filled($k->scheduled_location)) {
+                    $details[] = "Tempat: {$k->scheduled_location}";
+                }
 
                 fputcsv($out, [
                     'Konsultasi',
                     $k->displayName(),
                     $k->displayKelas(),
                     $k->created_at?->translatedFormat('d M Y'),
-                    $k->topic,
+                    $k->displayTopic(),
                     implode(' | ', $details),
                     $k->statusLabel(),
                 ]);

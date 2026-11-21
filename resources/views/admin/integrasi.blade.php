@@ -57,35 +57,38 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.links.save') }}" class="bg-sheet border border-rule p-6 sm:p-8 space-y-6">
-            @csrf @method('PUT')
-
-            <div class="pb-4 border-b border-ink">
+        <section class="bg-sheet border border-rule">
+            <div class="px-6 sm:px-8 py-5 border-b border-ink">
                 <h2 class="font-serif text-2xl font-medium tracking-tight text-ink">Perbarui alamat tautan</h2>
+                <p class="text-xs text-ink-faint mt-1">Masukkan tautan Google Spreadsheet dan folder Drive yang aktif.</p>
             </div>
 
-            @foreach ($fields as $field)
-                @php $currentUrl = $workspaceLinks[$field['key']] ?? ''; @endphp
-                <div>
-                    <label for="{{ $field['name'] }}" class="flex items-baseline gap-2 text-xs font-semibold text-ink mb-2">
-                        <span class="font-serif text-base text-accent">{{ $field['num'] }}</span>
-                        <span>{{ $field['label'] }}</span>
-                    </label>
-                    <input type="url" id="{{ $field['name'] }}" name="{{ $field['name'] }}" required maxlength="500"
-                           value="{{ old($field['name'], $currentUrl) }}"
-                           placeholder="https://..."
-                           class="w-full px-3.5 py-2.5 bg-paper/60 border border-rule rounded-md text-xs font-mono text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
-                    <p class="text-xs text-ink-faint mt-1.5">{{ $field['hint'] }}</p>
+            <form method="POST" action="{{ route('admin.links.save') }}" class="p-6 sm:p-8 space-y-6">
+                @csrf @method('PUT')
+
+                @foreach ($fields as $field)
+                    @php $currentUrl = $workspaceLinks[$field['key']] ?? ''; @endphp
+                    <div>
+                        <label for="{{ $field['name'] }}" class="flex items-baseline gap-2 text-xs font-semibold text-ink mb-2">
+                            <span class="font-serif text-base text-accent">{{ $field['num'] }}</span>
+                            <span>{{ $field['label'] }}</span>
+                        </label>
+                        <input type="url" id="{{ $field['name'] }}" name="{{ $field['name'] }}" required maxlength="500"
+                               value="{{ old($field['name'], $currentUrl) }}"
+                               placeholder="https://..."
+                               class="w-full h-[42px] px-3.5 bg-paper/60 border border-rule rounded-md text-xs font-mono text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
+                        <p class="text-xs text-ink-faint mt-1.5">{{ $field['hint'] }}</p>
+                    </div>
+                @endforeach
+
+                <div class="pt-4 border-t border-rule flex justify-end">
+                    <button type="submit"
+                            class="px-6 py-3 bg-accent hover:bg-accent-dark text-sheet font-semibold rounded-md text-sm transition-colors">
+                        Simpan Pengaturan Tautan
+                    </button>
                 </div>
-            @endforeach
-
-            <div class="pt-4 border-t border-rule flex justify-end">
-                <button type="submit"
-                        class="px-6 py-3 bg-accent hover:bg-accent-dark text-sheet font-semibold rounded-md text-sm transition-colors">
-                    Simpan Pengaturan Tautan
-                </button>
-            </div>
-        </form>
+            </form>
+        </section>
     </div>
 </div>
 @endsection

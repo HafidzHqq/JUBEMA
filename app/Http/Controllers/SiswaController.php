@@ -140,9 +140,11 @@ class SiswaController extends Controller
         ];
 
         foreach ([0, 1, 2] as $i) {
+            $rawStep = isset($validated['subtasks'][$i]) ? trim((string) $validated['subtasks'][$i]) : '';
+
             Subtask::create([
                 'task_id' => $task->id,
-                'text' => $validated['subtasks'][$i] ?? $defaults[$i],
+                'text' => $rawStep !== '' ? $rawStep : $defaults[$i],
                 'done' => false,
                 'position' => $i,
             ]);
@@ -228,51 +230,96 @@ class SiswaController extends Controller
     {
         $student = StudentSession::current($request);
         $formConfig = ConsultationFormConfig::get();
+        $questions = $formConfig['questions'];
 
-        $allowedDifficulties = $formConfig['q1_options'];
-        if ($formConfig['q1_allow_other']) {
-            $allowedDifficulties[] = '__other__';
+        $rules = [
+            'record_email' => ['nullable', 'boolean'],
+            'answers' => ['array'],
+            'answers_other' => ['array'],
+        ];
+        $messages = [];
+
+        foreach ($questions as $index => $q) {
+            $id = $q['id'];
+            $num = $index + 1;
+            $key = "answers.{$id}";
+            $requiredRule = ! empty($q['required']) ? 'required' : 'nullable';
+
+            if ($q['type'] === 'radio') {
+                $allowed = $q['options'] ?? [];
+                if (! empty($q['allow_other'])) {
+                    $allowed[] = '__other__';
+                }
+                $rules[$key] = [$requiredRule, Rule::in($allowed)];
+                $messages["{$key}.required"] = "Pilih jawaban untuk pertanyaan {$num}.";
+
+                if (! empty($q['allow_other'])) {
+                    $otherKey = "answers_other.{$id}";
+                    $rules[$otherKey] = ['nullable', "required_if:{$key},__other__", 'string', 'max:200'];
+                    $messages["{$otherKey}.required_if"] = "Tuliskan jawaban lainnya pada pertanyaan {$num}.";
+                }
+            } elseif ($q['type'] === 'scale') {
+                $rules[$key] = [$requiredRule, 'integer', 'between:1,4'];
+                $messages["{$key}.required"] = "Pilih skala (1–4) untuk pertanyaan {$num}.";
+            } elseif ($q['type'] === 'text') {
+                $rules[$key] = [$requiredRule, 'string', 'max:250'];
+                $messages["{$key}.required"] = "Pertanyaan {$num} wajib diisi.";
+            } else {
+                $rules[$key] = [$requiredRule, 'string', 'max:1000'];
+                $messages["{$key}.required"] = "Pertanyaan {$num} wajib diisi.";
+            }
         }
 
-        $validated = $request->validate([
-            'record_email' => ['nullable', 'boolean'],
-            'difficulty' => ['required', Rule::in($allowedDifficulties)],
-            'difficulty_other' => ['nullable', 'required_if:difficulty,__other__', 'string', 'max:200'],
-            'focus_level' => ['required', 'integer', 'between:1,4'],
-            'topic' => ['required', Rule::in($formConfig['q3_options'])],
-            'bring_journal' => ['required', Rule::in($formConfig['q4_options'])],
-            'mode' => ['required', Rule::in($formConfig['q5_options'])],
-            'consultation_method' => ['required', Rule::in($formConfig['q6_options'])],
-            'message' => ['nullable', 'string', 'max:600'],
-        ], [
-            'difficulty.required' => 'Pilih jawaban untuk pertanyaan 1.',
-            'difficulty_other.required_if' => 'Tuliskan jawaban lainnya pada pertanyaan 1.',
-            'focus_level.required' => 'Pilih skala tingkat fokus minggu ini (1–4).',
-            'topic.required' => 'Pilih jawaban untuk pertanyaan 3.',
-            'bring_journal.required' => 'Pilih jawaban untuk pertanyaan 4.',
-            'mode.required' => 'Pilih jawaban untuk pertanyaan 5.',
-            'consultation_method.required' => 'Pilih cara pendampingan yang paling nyaman untukmu.',
-        ]);
+        $validated = $request->validate($rules, $messages);
 
-        $difficulty = $validated['difficulty'] === '__other__'
-            ? trim((string) $validated['difficulty_other'])
-            : $validated['difficulty'];
+        $rawAnswers = $validated['answers'] ?? [];
+        $rawOthers = $validated['answers_other'] ?? [];
+        $structuredAnswers = [];
+        $byId = [];
+
+        foreach ($questions as $q) {
+            $id = $q['id'];
+            $val = $rawAnswers[$id] ?? null;
+
+            if ($q['type'] === 'radio' && $val === '__other__') {
+                $val = trim((string) ($rawOthers[$id] ?? ''));
+            } elseif ($val !== null) {
+                $val = trim((string) $val);
+            }
+
+            if ($val === '' || $val === null) {
+                continue;
+            }
+
+            $displayValue = $q['type'] === 'scale' ? "{$val} / 4" : $val;
+
+            $structuredAnswers[] = [
+                'id' => $id,
+                'label' => $q['label'],
+                'type' => $q['type'],
+                'value' => $displayValue,
+            ];
+            $byId[$id] = $val;
+        }
 
         $email = $request->boolean('record_email') && filled($student->google_email)
             ? $student->google_email
             : null;
 
+        $firstTextAnswer = $structuredAnswers[0]['value'] ?? 'Permintaan Konsultasi';
+
         $student->consultations()->create([
             'respondent_name' => $student->name,
             'respondent_kelas' => str_replace('Kelas ', '', (string) $student->kelas),
             'email' => $email,
-            'difficulty' => $difficulty,
-            'focus_level' => (int) $validated['focus_level'],
-            'topic' => $validated['topic'],
-            'bring_journal' => $validated['bring_journal'],
-            'mode' => $validated['mode'],
-            'consultation_method' => $validated['consultation_method'],
-            'message' => filled($validated['message'] ?? null) ? trim((string) $validated['message']) : null,
+            'difficulty' => isset($byId['difficulty']) ? mb_substr($byId['difficulty'], 0, 255) : null,
+            'focus_level' => isset($byId['focus_level']) && is_numeric($byId['focus_level']) ? (int) $byId['focus_level'] : null,
+            'topic' => mb_substr((string) ($byId['topic'] ?? $firstTextAnswer), 0, 200),
+            'bring_journal' => isset($byId['bring_journal']) ? mb_substr($byId['bring_journal'], 0, 120) : null,
+            'mode' => isset($byId['mode']) ? mb_substr($byId['mode'], 0, 120) : null,
+            'consultation_method' => isset($byId['consultation_method']) ? mb_substr($byId['consultation_method'], 0, 120) : null,
+            'message' => $byId['message'] ?? null,
+            'answers' => $structuredAnswers,
             'status' => 'terkirim',
         ]);
 

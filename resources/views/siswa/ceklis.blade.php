@@ -5,13 +5,13 @@
 @section('content')
 @php
     $days = ['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-    $activeDay = request('day', 'Semua');
+    $activeDay = in_array(request('day', 'Semua'), $days, true) ? request('day', 'Semua') : 'Semua';
     $filtered = $activeDay === 'Semua' ? $tasks : $tasks->where('day', $activeDay);
 @endphp
 
 {{-- Pembuka halaman & Timer Fokus 25 Menit --}}
-<section class="grid lg:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
-    <div class="lg:col-span-7">
+<section class="grid xl:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
+    <div class="xl:col-span-7">
         <p class="text-sm text-ink-faint mb-3">Langkah 2 · Pelaksanaan Harian</p>
         <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
             Ceklis harian &amp; <span class="marker italic">fokus 25 menit.</span>
@@ -22,18 +22,18 @@
         </p>
     </div>
 
-    <div class="lg:col-span-5 bg-ink text-sheet p-6 sm:p-7 flex items-center justify-between gap-6">
+    <div class="xl:col-span-5 bg-ink text-sheet p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4">
         <div>
             <p class="text-xs text-[#F9DD7A] uppercase tracking-[0.12em] font-medium">Timer Fokus 25 Menit</p>
             <p id="pomodoro-display" class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-none mt-2">25:00</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
             <button type="button" onclick="toggleTimer()" id="pomodoro-btn"
                     class="px-5 py-2.5 rounded-md bg-accent hover:bg-accent-dark text-sheet text-sm font-semibold transition-colors">
                 Mulai
             </button>
             <button type="button" onclick="resetTimer()"
-                    class="px-3 py-2.5 rounded-md border border-sheet/20 text-xs text-sheet/75 hover:text-sheet hover:border-sheet/50 transition-colors">
+                    class="px-3.5 py-2.5 rounded-md border border-sheet/20 text-xs text-sheet/75 hover:text-sheet hover:border-sheet/50 transition-colors">
                 Reset
             </button>
         </div>
@@ -44,7 +44,7 @@
 <section class="mt-10 bg-sheet border border-rule">
     {{-- Baris Filter Hari --}}
     <div class="px-6 sm:px-8 py-4 border-b border-ink flex flex-wrap items-center justify-between gap-4 bg-paper/45">
-        <div class="flex gap-1.5 overflow-x-auto py-0.5">
+        <div class="flex gap-1.5 overflow-x-auto py-0.5 max-w-full">
             @foreach ($days as $day)
                 <a href="?day={{ urlencode($day) }}"
                    class="whitespace-nowrap px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $activeDay === $day ? 'bg-ink text-sheet' : 'text-ink-soft hover:text-ink hover:bg-sheet' }}">
@@ -59,13 +59,14 @@
     <div class="divide-y divide-rule">
         @forelse ($filtered as $task)
             <article class="p-6 sm:p-8 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-                <div class="flex items-start gap-4 flex-1">
+                <div class="flex items-start gap-4 flex-1 min-w-0">
                     <form method="POST" action="{{ route('siswa.tasks.toggle', $task) }}">
                         @csrf @method('PATCH')
                         <input type="checkbox" {{ $task->completed ? 'checked' : '' }} onchange="this.form.submit()"
+                               aria-label="Tandai tugas {{ $task->title }} selesai"
                                class="mt-1.5 w-5 h-5 rounded border-rule text-accent focus:ring-accent cursor-pointer">
                     </form>
-                    <div class="space-y-2 flex-1">
+                    <div class="space-y-2 flex-1 min-w-0">
                         <div class="flex flex-wrap items-center gap-2 text-xs">
                             <span class="px-2 py-0.5 rounded bg-ink text-sheet font-semibold">{{ $task->day }}</span>
                             <span class="font-medium text-ink">{{ $task->subject }}</span>
@@ -102,8 +103,12 @@
             </article>
         @empty
             <div class="p-14 text-center space-y-3">
-                <p class="font-serif text-2xl text-ink">Tidak ada jadwal untuk hari {{ $activeDay }}</p>
-                <p class="text-sm text-ink-faint">Belum ada tugas yang dijadwalkan pada hari ini.</p>
+                <p class="font-serif text-2xl text-ink">
+                    {{ $activeDay === 'Semua' ? 'Belum ada rencana tugas' : 'Tidak ada jadwal untuk hari '.$activeDay }}
+                </p>
+                <p class="text-sm text-ink-faint">
+                    {{ $activeDay === 'Semua' ? 'Tambahkan rencana tugas pertamamu agar muncul di ceklis harian.' : 'Belum ada tugas yang dijadwalkan pada hari '.$activeDay.'.' }}
+                </p>
                 <div class="pt-2">
                     <a href="{{ route('siswa.perencana') }}"
                        class="inline-block px-5 py-2.5 rounded-md bg-accent hover:bg-accent-dark text-sheet text-xs font-semibold transition-colors">
@@ -119,18 +124,43 @@
 <script>
     let timerSeconds = 25 * 60;
     let timerInterval = null;
+
     function toggleTimer() {
         const btn = document.getElementById('pomodoro-btn');
-        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; btn.textContent = 'Lanjut'; }
-        else {
-            btn.textContent = 'Jeda';
-            timerInterval = setInterval(() => {
-                if (timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); }
-                else { clearInterval(timerInterval); timerInterval = null; btn.textContent = 'Mulai'; showToast('Sesi fokus 25 menit selesai!', 'success'); }
-            }, 1000);
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            btn.textContent = 'Lanjut';
+            return;
         }
+
+        if (timerSeconds <= 0) {
+            timerSeconds = 25 * 60;
+            updateTimerDisplay();
+        }
+
+        btn.textContent = 'Jeda';
+        timerInterval = setInterval(() => {
+            if (timerSeconds > 0) {
+                timerSeconds--;
+                updateTimerDisplay();
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                btn.textContent = 'Mulai';
+                showToast('Sesi fokus 25 menit selesai!', 'success');
+            }
+        }, 1000);
     }
-    function resetTimer() { clearInterval(timerInterval); timerInterval = null; timerSeconds = 25 * 60; document.getElementById('pomodoro-btn').textContent = 'Mulai'; updateTimerDisplay(); }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerSeconds = 25 * 60;
+        document.getElementById('pomodoro-btn').textContent = 'Mulai';
+        updateTimerDisplay();
+    }
+
     function updateTimerDisplay() {
         const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
         const s = String(timerSeconds % 60).padStart(2, '0');

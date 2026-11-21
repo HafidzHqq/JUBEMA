@@ -14,44 +14,47 @@
     </p>
 </section>
 
-<div class="mt-12 grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+<div class="mt-10 grid lg:grid-cols-12 gap-8 items-stretch">
 
     {{-- Kolom Kiri: Form Tambah Akun Guru BK --}}
-    <div class="lg:col-span-5">
-        <form method="POST" action="{{ route('admin.admins.store') }}" class="bg-sheet border border-rule p-6 sm:p-8 space-y-5">
-            @csrf
-            <div class="pb-4 border-b border-ink">
-                <h2 class="font-serif text-2xl font-medium tracking-tight text-ink">
-                    Tambah akun Guru BK
-                </h2>
-                <p class="text-xs text-ink-faint mt-1">
-                    Cukup masukkan nama dan alamat email Google yang akan dipakai login.
-                </p>
-            </div>
+    <section class="lg:col-span-5 bg-sheet border border-rule flex flex-col">
+        <div class="px-6 sm:px-8 py-5 border-b border-ink">
+            <h2 class="font-serif text-2xl font-medium tracking-tight text-ink">
+                Tambah akun Guru BK
+            </h2>
+            <p class="text-xs text-ink-faint mt-1">
+                Cukup masukkan nama dan alamat email Google yang akan dipakai login.
+            </p>
+        </div>
 
-            @if ($errors->any())
-                <div class="border-l-2 border-red-600 pl-3.5 text-red-800 text-xs space-y-1">
-                    @foreach ($errors->all() as $err)
-                        <p>{{ $err }}</p>
-                    @endforeach
+        <form method="POST" action="{{ route('admin.admins.store') }}" class="p-6 sm:p-8 flex-1 flex flex-col justify-between gap-6">
+            <div class="space-y-4">
+                @csrf
+
+                @if ($errors->any())
+                    <div class="border-l-2 border-red-600 pl-3.5 text-red-800 text-xs space-y-1">
+                        @foreach ($errors->all() as $err)
+                            <p>{{ $err }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div>
+                    <label for="admin-name" class="block text-xs font-semibold text-ink mb-1.5">Nama Lengkap / Panggilan</label>
+                    <input type="text" id="admin-name" name="name" required maxlength="80" value="{{ old('name') }}"
+                           placeholder="Contoh: Ibu Siti Rahmawati"
+                           class="w-full h-[42px] px-3.5 bg-paper/60 border border-rule rounded-md text-sm text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
                 </div>
-            @endif
 
-            <div>
-                <label for="admin-name" class="block text-xs font-semibold text-ink mb-1.5">Nama Lengkap / Panggilan</label>
-                <input type="text" id="admin-name" name="name" required maxlength="80" value="{{ old('name') }}"
-                       placeholder="Contoh: Ibu Siti Rahmawati"
-                       class="w-full px-3.5 py-2.5 bg-paper/60 border border-rule rounded-md text-sm text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
-            </div>
-
-            <div>
-                <label for="admin-email" class="block text-xs font-semibold text-ink mb-1.5">Alamat Email Google</label>
-                <input type="email" id="admin-email" name="email" required maxlength="120" value="{{ old('email') }}"
-                       placeholder="contoh: gurubk@gmail.com"
-                       class="w-full px-3.5 py-2.5 bg-paper/60 border border-rule rounded-md text-sm text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
-                <p class="text-xs text-ink-faint mt-1.5">
-                    Pastikan email sesuai dengan akun Google yang digunakan saat masuk.
-                </p>
+                <div>
+                    <label for="admin-email" class="block text-xs font-semibold text-ink mb-1.5">Alamat Email Google</label>
+                    <input type="email" id="admin-email" name="email" required maxlength="120" value="{{ old('email') }}"
+                           placeholder="contoh: gurubk@gmail.com"
+                           class="w-full h-[42px] px-3.5 bg-paper/60 border border-rule rounded-md text-sm text-ink placeholder:text-ink-faint focus:bg-sheet focus:border-ink transition">
+                    <p class="text-xs text-ink-faint mt-1.5">
+                        Pastikan email sesuai dengan akun Google yang digunakan saat masuk.
+                    </p>
+                </div>
             </div>
 
             <button type="submit"
@@ -59,75 +62,77 @@
                 Tambahkan Akun Guru BK
             </button>
         </form>
-    </div>
+    </section>
 
     {{-- Kolom Kanan: Daftar Akun Guru BK Terdaftar --}}
-    <div class="lg:col-span-7 bg-sheet border border-rule">
+    <section class="lg:col-span-7 bg-sheet border border-rule flex flex-col">
         <div class="px-6 sm:px-8 py-5 border-b border-ink flex items-baseline justify-between gap-4">
             <div>
                 <h2 class="font-serif text-2xl font-medium tracking-tight text-ink">Akun terdaftar</h2>
-                <p class="text-xs text-ink-faint mt-0.5">Daftar akun yang memiliki akses ke Ruang Guru BK</p>
+                <p class="text-xs text-ink-faint mt-1">Daftar akun yang memiliki akses ke Ruang Guru BK.</p>
             </div>
             <span class="text-xs font-medium text-ink-faint shrink-0">{{ $admins->count() }} akun</span>
         </div>
 
-        <div class="divide-y divide-rule">
-            @forelse ($admins as $item)
-                @php
-                    $isCurrent = $item->id === auth()->id();
-                    $isEnvProtected = in_array(strtolower($item->email), $envAdminEmails ?? [], true);
-                    $initial = strtoupper(substr($item->name ?: 'G', 0, 1));
-                @endphp
-                <article class="p-6 sm:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 min-w-0">
-                        @if (filled($item->avatar_url))
-                            <img src="{{ $item->avatar_url }}" alt="" class="w-10 h-10 rounded-full object-cover border border-rule shrink-0">
-                        @else
-                            <div class="w-10 h-10 rounded-full bg-ink text-sheet font-serif text-base font-semibold flex items-center justify-center shrink-0">
-                                {{ $initial }}
-                            </div>
-                        @endif
+        @if ($admins->isEmpty())
+            <div class="flex-1 p-12 flex flex-col items-center justify-center text-center">
+                <p class="font-serif text-xl text-ink">Belum ada akun Guru BK di database</p>
+                <p class="text-sm text-ink-faint mt-1">Tambahkan akun pertama melalui formulir di sebelah kiri.</p>
+            </div>
+        @else
+            <div class="divide-y divide-rule flex-1">
+                @foreach ($admins as $item)
+                    @php
+                        $isCurrent = $item->id === auth()->id();
+                        $isEnvProtected = in_array(strtolower($item->email), $envAdminEmails ?? [], true);
+                        $initial = strtoupper(substr($item->name ?: 'G', 0, 1));
+                    @endphp
+                    <article class="p-6 sm:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4 min-w-0">
+                            @if (filled($item->avatar_url))
+                                <img src="{{ $item->avatar_url }}" alt="" class="w-10 h-10 rounded-full object-cover border border-rule shrink-0">
+                            @else
+                                <div class="w-10 h-10 rounded-full bg-ink text-sheet font-serif text-base font-semibold flex items-center justify-center shrink-0">
+                                    {{ $initial }}
+                                </div>
+                            @endif
 
-                        <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <p class="font-semibold text-ink truncate">{{ $item->name }}</p>
-                                @if ($isCurrent)
-                                    <span class="px-2 py-0.5 rounded bg-[#F9DD7A]/60 text-ink text-[11px] font-semibold">Anda</span>
-                                @endif
-                                @if ($isEnvProtected)
-                                    <span class="px-2 py-0.5 rounded bg-paper border border-rule text-ink-soft text-[11px] font-medium">Akun Utama</span>
-                                @endif
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-semibold text-ink truncate">{{ $item->name }}</p>
+                                    @if ($isCurrent)
+                                        <span class="px-2 py-0.5 rounded bg-[#F9DD7A]/60 text-ink text-[11px] font-semibold">Anda</span>
+                                    @endif
+                                    @if ($isEnvProtected)
+                                        <span class="px-2 py-0.5 rounded bg-paper border border-rule text-ink-soft text-[11px] font-medium">Akun Utama</span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-ink-faint truncate mt-0.5">{{ $item->email }}</p>
+                                <p class="text-[11px] mt-1 {{ filled($item->google_id) ? 'text-accent font-medium' : 'text-ink-faint' }}">
+                                    {{ filled($item->google_id) ? 'Terhubung dengan Google' : 'Menunggu login Google pertama' }}
+                                </p>
                             </div>
-                            <p class="text-xs text-ink-faint truncate mt-0.5">{{ $item->email }}</p>
-                            <p class="text-[11px] mt-1 {{ filled($item->google_id) ? 'text-accent font-medium' : 'text-ink-faint' }}">
-                                {{ filled($item->google_id) ? 'Terhubung dengan Google' : 'Menunggu login Google pertama' }}
-                            </p>
                         </div>
-                    </div>
 
-                    <div class="shrink-0">
-                        @if ($isCurrent || $isEnvProtected)
-                            <span class="text-xs text-ink-faint">Terlindungi</span>
-                        @else
-                            <form method="POST" action="{{ route('admin.admins.destroy', $item) }}"
-                                  onsubmit="return confirm('Cabut akses Ruang Guru BK untuk {{ $item->email }}?');">
-                                @csrf @method('DELETE')
-                                <button type="submit"
-                                        class="px-3.5 py-1.5 rounded-md border border-rule bg-paper hover:border-red-300 hover:bg-red-50 text-xs font-medium text-red-700 transition-colors">
-                                    Hapus akses
-                                </button>
-                            </form>
-                        @endif
-                    </div>
-                </article>
-            @empty
-                <div class="p-12 text-center">
-                    <p class="font-serif text-xl text-ink">Belum ada akun Guru BK di database</p>
-                    <p class="text-sm text-ink-faint mt-1">Tambahkan akun pertama melalui formulir di sebelah kiri.</p>
-                </div>
-            @endforelse
-        </div>
-    </div>
+                        <div class="shrink-0">
+                            @if ($isCurrent || $isEnvProtected)
+                                <span class="text-xs text-ink-faint">Terlindungi</span>
+                            @else
+                                <form method="POST" action="{{ route('admin.admins.destroy', $item) }}"
+                                      onsubmit="return confirm({{ \Illuminate\Support\Js::from('Cabut akses Ruang Guru BK untuk '.$item->email.'?') }});">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                            class="px-3.5 py-1.5 rounded-md border border-rule bg-paper hover:border-red-300 hover:bg-red-50 text-xs font-medium text-red-700 transition-colors">
+                                        Hapus akses
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+    </section>
 
 </div>
 @endsection

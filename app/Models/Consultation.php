@@ -63,14 +63,18 @@ class Consultation extends Model
         'mode',
         'consultation_method',
         'message',
+        'answers',
         'status',
         'scheduled_at',
+        'scheduled_location',
+        'scheduled_note',
     ];
 
     protected function casts(): array
     {
         return [
             'focus_level' => 'integer',
+            'answers' => 'array',
             'scheduled_at' => 'datetime',
         ];
     }
@@ -99,5 +103,76 @@ class Consultation extends Model
         }
 
         return $this->student?->kelas ?? '-';
+    }
+
+    public function displayTopic(): string
+    {
+        if (filled($this->topic)) {
+            return $this->topic;
+        }
+
+        foreach ($this->formattedAnswers() as $ans) {
+            if (filled($ans['value'] ?? null)) {
+                return (string) $ans['value'];
+            }
+        }
+
+        return 'Permintaan Konsultasi';
+    }
+
+    /**
+     * Daftar jawaban terstruktur baik dari format dinamis baru maupun kolom bawaan lama.
+     *
+     * @return list<array{id: string, label: string, type: string, value: string}>
+     */
+    public function formattedAnswers(): array
+    {
+        if (is_array($this->answers) && count($this->answers) > 0) {
+            $result = [];
+            foreach ($this->answers as $entry) {
+                if (! is_array($entry)) {
+                    continue;
+                }
+                $val = isset($entry['value']) ? trim((string) $entry['value']) : '';
+                if ($val === '') {
+                    continue;
+                }
+                $result[] = [
+                    'id' => (string) ($entry['id'] ?? ''),
+                    'label' => (string) ($entry['label'] ?? 'Pertanyaan'),
+                    'type' => (string) ($entry['type'] ?? 'text'),
+                    'value' => $val,
+                ];
+            }
+
+            if (count($result) > 0) {
+                return $result;
+            }
+        }
+
+        $legacy = [];
+        if (filled($this->difficulty)) {
+            $legacy[] = ['id' => 'difficulty', 'label' => 'Kesulitan utama', 'type' => 'radio', 'value' => (string) $this->difficulty];
+        }
+        if ($this->focus_level) {
+            $legacy[] = ['id' => 'focus_level', 'label' => 'Skala fokus', 'type' => 'scale', 'value' => $this->focus_level.' / 4'];
+        }
+        if (filled($this->topic)) {
+            $legacy[] = ['id' => 'topic', 'label' => 'Topik diskusi', 'type' => 'radio', 'value' => (string) $this->topic];
+        }
+        if (filled($this->bring_journal)) {
+            $legacy[] = ['id' => 'bring_journal', 'label' => 'Catatan jurnal', 'type' => 'radio', 'value' => (string) $this->bring_journal];
+        }
+        if (filled($this->mode)) {
+            $legacy[] = ['id' => 'mode', 'label' => 'Waktu pilihan', 'type' => 'radio', 'value' => (string) $this->mode];
+        }
+        if (filled($this->consultation_method)) {
+            $legacy[] = ['id' => 'consultation_method', 'label' => 'Cara pendampingan', 'type' => 'radio', 'value' => (string) $this->consultation_method];
+        }
+        if (filled($this->message)) {
+            $legacy[] = ['id' => 'message', 'label' => 'Catatan tambahan', 'type' => 'textarea', 'value' => (string) $this->message];
+        }
+
+        return $legacy;
     }
 }
