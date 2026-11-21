@@ -16,12 +16,12 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = config('app.jubema.admin_email', 'haqiqihf@gmail.com');
+        $email = config('app.jubema.admin_email', 'hesnimaharani31@gmail.com');
 
         User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => config('app.jubema.admin_name', 'Haqiqih'),
+                'name' => config('app.jubema.admin_name', 'Hesni Maharani'),
                 'password' => Hash::make(config('app.jubema.admin_password', 'Rani010806')),
                 'role' => 'admin',
             ]

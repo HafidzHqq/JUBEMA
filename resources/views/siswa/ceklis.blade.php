@@ -10,24 +10,24 @@
 @endphp
 
 {{-- Pembuka halaman & Timer Fokus 25 Menit --}}
-<section class="grid xl:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
+<section class="grid xl:grid-cols-12 gap-6 sm:gap-8 pb-7 sm:pb-10 border-b border-ink items-end">
     <div class="xl:col-span-7">
-        <p class="text-sm text-ink-faint mb-3">Langkah 2 · Pelaksanaan Harian</p>
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+        <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Langkah 2 · Pelaksanaan Harian</p>
+        <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
             Ceklis harian &amp; <span class="marker italic">fokus 25 menit.</span>
         </h1>
-        <p class="mt-4 text-base text-ink-soft max-w-xl leading-relaxed">
+        <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-xl leading-relaxed">
             Pilih satu tugas untuk hari ini, nyalakan timer 25 menit sekali duduk, dan centang setiap
             langkah kecil yang berhasil kamu selesaikan.
         </p>
     </div>
 
-    <div class="xl:col-span-5 bg-ink text-sheet p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4">
+    <div class="xl:col-span-5 bg-ink text-sheet p-5 sm:p-7 flex items-center justify-between gap-4">
         <div>
-            <p class="text-xs text-[#F9DD7A] uppercase tracking-[0.12em] font-medium">Timer Fokus 25 Menit</p>
-            <p id="pomodoro-display" class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-none mt-2">25:00</p>
+            <p class="text-[11px] sm:text-xs text-[#F9DD7A] uppercase tracking-[0.12em] font-medium">Timer Fokus 25 Menit</p>
+            <p id="pomodoro-display" class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-none mt-1.5 sm:mt-2 tabular-nums">25:00</p>
         </div>
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2 sm:gap-2.5">
             <button type="button" onclick="toggleTimer()" id="pomodoro-btn"
                     class="px-5 py-2.5 rounded-md bg-accent hover:bg-accent-dark text-sheet text-sm font-semibold transition-colors">
                 Mulai
@@ -41,18 +41,18 @@
 </section>
 
 {{-- Lembar Jurnal Ceklis --}}
-<section class="mt-10 bg-sheet border border-rule">
-    {{-- Baris Filter Hari --}}
-    <div class="px-6 sm:px-8 py-4 border-b border-ink flex flex-wrap items-center justify-between gap-4 bg-paper/45">
-        <div class="flex gap-1.5 overflow-x-auto py-0.5 max-w-full">
+<section class="mt-7 sm:mt-10 bg-sheet border border-rule">
+    {{-- Baris Filter Hari (geser horizontal mulus di HP) --}}
+    <div class="px-4 sm:px-8 py-3.5 sm:py-4 border-b border-ink flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 bg-paper/45">
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1">
             @foreach ($days as $day)
                 <a href="?day={{ urlencode($day) }}"
-                   class="whitespace-nowrap px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $activeDay === $day ? 'bg-ink text-sheet' : 'text-ink-soft hover:text-ink hover:bg-sheet' }}">
+                   class="whitespace-nowrap px-3.5 py-2 sm:py-1.5 rounded-md text-xs font-semibold transition-colors {{ $activeDay === $day ? 'bg-ink text-sheet' : 'bg-sheet/70 sm:bg-transparent text-ink-soft hover:text-ink hover:bg-sheet' }}">
                     {{ $day === 'Semua' ? 'Semua Hari' : $day }}
                 </a>
             @endforeach
         </div>
-        <span class="text-xs font-medium text-ink-faint">{{ $filtered->count() }} tugas ditampilkan</span>
+        <span class="text-xs font-medium text-ink-faint shrink-0">{{ $filtered->count() }} tugas ditampilkan</span>
     </div>
 
     {{-- Daftar Tugas & Sub-langkah --}}
@@ -122,49 +122,12 @@
 
 @push('scripts')
 <script>
-    let timerSeconds = 25 * 60;
-    let timerInterval = null;
-
     function toggleTimer() {
-        const btn = document.getElementById('pomodoro-btn');
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            btn.textContent = 'Lanjut';
-            return;
-        }
-
-        if (timerSeconds <= 0) {
-            timerSeconds = 25 * 60;
-            updateTimerDisplay();
-        }
-
-        btn.textContent = 'Jeda';
-        timerInterval = setInterval(() => {
-            if (timerSeconds > 0) {
-                timerSeconds--;
-                updateTimerDisplay();
-            } else {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                btn.textContent = 'Mulai';
-                showToast('Sesi fokus 25 menit selesai!', 'success');
-            }
-        }, 1000);
+        window.JubemaTimer?.toggle();
     }
 
     function resetTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        timerSeconds = 25 * 60;
-        document.getElementById('pomodoro-btn').textContent = 'Mulai';
-        updateTimerDisplay();
-    }
-
-    function updateTimerDisplay() {
-        const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-        const s = String(timerSeconds % 60).padStart(2, '0');
-        document.getElementById('pomodoro-display').textContent = `${m}:${s}`;
+        window.JubemaTimer?.reset();
     }
 </script>
 @endpush

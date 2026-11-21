@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\StudentSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
@@ -131,20 +133,62 @@ class GoogleAuthController extends Controller
             return false;
         }
 
-        $allowlist = array_filter(array_merge(
-            [(string) config('app.jubema.admin_email')],
-            (array) config('app.jubema.admin_emails', [])
-        ));
-
-        foreach ($allowlist as $candidate) {
-            if (Str::lower(trim((string) $candidate)) === $email) {
-                return true;
-            }
+        // 1) Email yang terdaftar aktif sebagai admin di tabel `users`.
+        if (User::whereRaw('LOWER(email) = ?', [$email])->where('role', 'admin')->exists()) {
+            return true;
         }
 
-        // Email yang sudah terdaftar sebagai admin di tabel `users` juga boleh masuk.
-        return User::whereRaw('LOWER(email) = ?', [$email])
-            ->where('role', 'admin')
-            ->exists();
+        // 2) Email admin utama / allowlist dari konfigurasi (.env).
+        $allowlist = array_values(array_unique(array_filter(array_map(
+            static fn ($candidate) => Str::lower(trim((string) $candidate)),
+            array_merge(
+                [(string) config('app.jubema.admin_email')],
+                (array) config('app.jubema.admin_emails', [])
+            )
+        ))));
+
+        if (! in_array($email, $allowlist, true)) {
+            return false;
+        }
+
+        // Jika admin utama sudah keluar dari admin dan masih ada admin lain yang aktif,
+        // jangan otomatis menjadikannya admin lagi saat login Google.
+        $hasOtherActiveAdmin = User::where('role', 'admin')->exists();
+        if ($hasOtherActiveAdmin && in_array($email, self::revokedEnvAdminEmails(), true)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Daftar email admin bawaan (.env) yang sudah dicabut/keluar dari akses admin.
+     *
+     * @return list<string>
+     */
+    public static function revokedEnvAdminEmails(): array
+    {
+        try {
+            if (! Schema::hasTable('settings')) {
+                return [];
+            }
+
+            $raw = Setting::get('revoked_env_admin_emails');
+            if (! is_string($raw) || trim($raw) === '') {
+                return [];
+            }
+
+            $decoded = json_decode($raw, true);
+            if (! is_array($decoded)) {
+                return [];
+            }
+
+            return array_values(array_unique(array_filter(array_map(
+                static fn ($e) => Str::lower(trim((string) $e)),
+                $decoded
+            ))));
+        } catch (Throwable) {
+            return [];
+        }
     }
 }

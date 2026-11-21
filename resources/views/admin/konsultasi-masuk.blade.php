@@ -8,20 +8,20 @@
     $scheduled = $consultations->where('status', 'sudah_dijadwalkan');
 @endphp
 
-<section class="grid lg:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
+<section class="grid lg:grid-cols-12 gap-5 sm:gap-8 pb-7 sm:pb-10 border-b border-ink items-end">
     <div class="lg:col-span-8">
-        <p class="text-sm text-ink-faint mb-3">Ruang Guru BK · Layanan Konseling</p>
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+        <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Ruang Guru BK · Layanan Konseling</p>
+        <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
             Respon formulir <span class="marker italic">konsultasi siswa.</span>
         </h1>
-        <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+        <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
             Seluruh formulir konsultasi yang diisi siswa melalui web JUBEMA langsung masuk ke sini.
             Tetapkan tanggal, jam, dan tempat pendampingan agar siswa langsung menerima jadwalnya.
         </p>
     </div>
     <div class="lg:col-span-4 lg:text-right">
         <a href="{{ route('admin.konsultasi.form.edit') }}"
-           class="inline-block px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-sm font-semibold transition-colors">
+           class="w-full sm:w-auto inline-block text-center px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-sm font-semibold transition-colors">
             Edit Pertanyaan Formulir →
         </a>
     </div>
@@ -29,17 +29,17 @@
 
 <section class="bg-sheet border-b border-x border-rule">
     <dl class="grid grid-cols-3 divide-x divide-rule">
-        <div class="p-6 sm:p-8">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Total Masuk</dt>
-            <dd class="mt-2.5 font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $consultations->count() }}</dd>
+        <div class="p-3.5 sm:p-8">
+            <dt class="text-[10px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.08em] sm:tracking-[0.12em]">Total Masuk</dt>
+            <dd class="mt-1.5 sm:mt-2.5 font-serif text-2xl sm:text-5xl text-ink leading-none">{{ $consultations->count() }}</dd>
         </div>
-        <div class="p-6 sm:p-8">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Menunggu Jadwal</dt>
-            <dd class="mt-2.5 font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $pending->count() }}</dd>
+        <div class="p-3.5 sm:p-8">
+            <dt class="text-[10px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.08em] sm:tracking-[0.12em]">Menunggu</dt>
+            <dd class="mt-1.5 sm:mt-2.5 font-serif text-2xl sm:text-5xl text-ink leading-none">{{ $pending->count() }}</dd>
         </div>
-        <div class="p-6 sm:p-8">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Sudah Dijadwalkan</dt>
-            <dd class="mt-2.5 font-serif text-4xl sm:text-5xl text-accent leading-none">{{ $scheduled->count() }}</dd>
+        <div class="p-3.5 sm:p-8">
+            <dt class="text-[10px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.08em] sm:tracking-[0.12em]">Terjadwal</dt>
+            <dd class="mt-1.5 sm:mt-2.5 font-serif text-2xl sm:text-5xl text-accent leading-none">{{ $scheduled->count() }}</dd>
         </div>
     </dl>
 </section>
@@ -181,11 +181,20 @@
                             @csrf @method('PATCH')
                             <input type="hidden" name="action" value="cancel">
                             <button type="submit"
-                                    class="px-4 py-2 rounded-md text-xs font-medium text-ink-faint hover:text-red-700 transition-colors">
+                                    class="px-3.5 py-2 rounded-md border border-rule bg-paper hover:border-ink text-xs font-medium text-ink-soft hover:text-ink transition-colors">
                                 Batalkan Jadwal
                             </button>
                         </form>
                     @endif
+
+                    <form method="POST" action="{{ route('admin.konsultasi.destroy', $item) }}"
+                          onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus respons konsultasi dari '.$item->displayName().'?') }});">
+                        @csrf @method('DELETE')
+                        <button type="submit"
+                                class="px-3.5 py-2 rounded-md border border-rule bg-paper hover:border-red-300 hover:bg-red-50 text-xs font-medium text-red-700 transition-colors">
+                            Hapus
+                        </button>
+                    </form>
                 </div>
             </article>
         @empty
@@ -197,11 +206,12 @@
     </div>
 </section>
 
-{{-- Modal Penjadwalan Konsultasi (Waktu, Tempat & Catatan) --}}
+{{-- Modal Penjadwalan Konsultasi (Bottom-Sheet di Mobile, Modal Tengah di Desktop) --}}
 <div id="schedule-modal"
-     class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-ink/50 backdrop-blur-[1px]"
+     class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/50 backdrop-blur-[1px]"
      role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
-    <div class="w-full max-w-lg bg-sheet border border-rule shadow-xl overflow-hidden">
+    <div class="w-full max-w-lg bg-sheet border-t sm:border border-rule rounded-t-2xl sm:rounded-none shadow-xl overflow-hidden max-h-[92dvh] overflow-y-auto">
+        <div class="w-10 h-1 bg-rule rounded-full mx-auto mt-3 sm:hidden" aria-hidden="true"></div>
         <div class="px-6 py-5 border-b border-ink flex items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.12em] text-accent">Penjadwalan Konsultasi</p>

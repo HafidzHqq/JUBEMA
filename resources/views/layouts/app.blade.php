@@ -31,6 +31,13 @@
             }
         }
     </script>
+    <script>
+        try {
+            if (localStorage.getItem('jubema_sidebar_collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
     <style>
         @media print {
             @page { margin: 1.5cm; }
@@ -38,6 +45,51 @@
             .print-only { display: block !important; }
             body { background: white !important; color: #111827 !important; }
             main { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+        }
+        @media (min-width: 1024px) {
+            html.sidebar-collapsed #user-sidebar {
+                width: 76px !important;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-text,
+            html.sidebar-collapsed #user-sidebar .sidebar-group-heading {
+                display: none !important;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-group-divider {
+                display: block !important;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-brand-row {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-nav {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            html.sidebar-collapsed #user-sidebar .user-sidebar-link {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-footer {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-profile-row {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            html.sidebar-collapsed #user-sidebar .sidebar-logout-btn {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            html.sidebar-collapsed #sidebar-icon-collapse {
+                display: none;
+            }
+            html.sidebar-collapsed #sidebar-icon-expand {
+                display: block;
+            }
         }
         .marker {
             background: linear-gradient(transparent 58%, #F9DD7A 58%, #F9DD7A 92%, transparent 92%);
@@ -51,6 +103,8 @@
         footer a:focus-visible, footer button:focus-visible {
             outline-color: #F9DD7A;
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
     @stack('styles')
 </head>
@@ -67,7 +121,7 @@
         ['route' => 'admin.dashboard', 'active' => ['admin.dashboard'], 'label' => 'Rekap Kelas'],
         ['route' => 'admin.konsultasi-masuk', 'active' => ['admin.konsultasi-masuk', 'admin.konsultasi.form.*'], 'label' => 'Konsultasi Masuk'],
         ['route' => 'admin.rpl-admin', 'active' => ['admin.rpl-admin'], 'label' => 'Dokumen RPL'],
-        ['route' => 'admin.integrasi', 'active' => ['admin.integrasi'], 'label' => 'Tautan Sekolah'],
+        ['route' => 'admin.integrasi', 'active' => ['admin.integrasi'], 'label' => 'Upload Materi'],
         ['route' => 'admin.admins.index', 'active' => ['admin.admins.*'], 'label' => 'Akun Guru BK'],
     ];
 
@@ -92,8 +146,8 @@
     ];
 @endphp
 
-{{-- Notifikasi Toast --}}
-<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+{{-- Notifikasi Toast (penuh & rapi di layar HP, melayang di kanan atas pada layar besar) --}}
+<div id="toast-container" class="fixed top-4 inset-x-4 sm:left-auto sm:right-5 sm:top-5 z-50 flex flex-col gap-2 sm:max-w-sm sm:w-full pointer-events-none"></div>
 
 @if ($isAdmin)
     {{-- Kepala halaman sticky penuh sepanjang scroll (selaras dengan landing page) --}}
@@ -140,20 +194,34 @@
             </div>
         </div>
 
-        {{-- Drawer Navigasi Mobile --}}
-        <div id="app-mobile-nav" class="hidden lg:hidden border-t border-rule bg-sheet">
-            <div class="px-6 py-4 space-y-1 text-sm">
+        {{-- Drawer Navigasi Mobile Admin --}}
+        <div id="app-mobile-nav" class="hidden lg:hidden border-t border-rule bg-sheet shadow-lg">
+            <div class="px-5 py-4 space-y-1.5 text-sm">
+                <div class="pb-3 mb-2 border-b border-rule flex items-center justify-between">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-8 h-8 rounded-full bg-ink text-sheet font-serif text-xs font-semibold flex items-center justify-center shrink-0">
+                            {{ $initial }}
+                        </span>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-ink truncate leading-tight">{{ $displayName }}</p>
+                            <p class="text-[11px] text-ink-faint">Ruang Guru BK</p>
+                        </div>
+                    </div>
+                </div>
                 @foreach ($adminNavItems as $item)
                     @php $active = request()->routeIs(...$item['active']); @endphp
                     <a href="{{ route($item['route']) }}"
-                       class="app-mobile-nav-link block py-2.5 {{ $active ? 'text-ink font-semibold underline underline-offset-4 decoration-accent decoration-2' : 'text-ink-soft hover:text-ink font-medium' }}">
-                        {{ $item['label'] }}
+                       class="app-mobile-nav-link flex items-center justify-between px-3.5 py-3 rounded-md {{ $active ? 'bg-ink text-sheet font-semibold' : 'text-ink-soft hover:bg-paper hover:text-ink font-medium' }}">
+                        <span>{{ $item['label'] }}</span>
+                        @if ($active)
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#F9DD7A]" aria-hidden="true"></span>
+                        @endif
                     </a>
                 @endforeach
                 <div class="pt-3 mt-2 border-t border-rule flex flex-col gap-2">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="block w-full py-2.5 px-4 rounded-md bg-ink text-sheet text-center font-medium hover:bg-black transition-colors">
+                        <button type="submit" class="block w-full py-3 px-4 rounded-md bg-ink text-sheet text-center font-medium hover:bg-black transition-colors">
                             Keluar
                         </button>
                     </form>
@@ -163,7 +231,7 @@
     </header>
 
     {{-- Konten Utama Admin --}}
-    <main class="flex-1 w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 py-10 sm:py-14">
+    <main class="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 py-7 sm:py-12">
         @yield('content')
     </main>
 @else
@@ -175,13 +243,13 @@
         {{-- Sidebar Kiri --}}
         <aside id="user-sidebar"
                aria-label="Navigasi Jurnal Siswa"
-               class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full transition-transform duration-200 ease-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:w-64 xl:w-72 shrink-0 bg-sheet border-r border-rule flex flex-col justify-between no-print">
+               class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full transition-[transform,width] duration-200 ease-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:w-64 xl:w-72 shrink-0 bg-sheet border-r border-rule flex flex-col justify-between no-print">
 
             {{-- Atas: Brand JUBEMA --}}
-            <div class="px-6 h-[72px] lg:h-[79px] border-b border-rule flex items-center justify-between gap-3 shrink-0">
-                <a href="{{ route('landing') }}" class="flex items-center gap-3 group min-w-0">
+            <div class="sidebar-brand-row px-6 h-[72px] lg:h-[79px] border-b border-rule flex items-center justify-between gap-3 shrink-0">
+                <a href="{{ route('landing') }}" title="JUBEMA · Halaman Depan" class="flex items-center gap-3 group min-w-0">
                     <x-logo class="w-9 h-9 shrink-0 shadow-sm rounded-[10px]" />
-                    <div class="min-w-0">
+                    <div class="sidebar-text min-w-0">
                         <span class="block font-serif text-[1.4rem] font-semibold tracking-tight leading-none text-ink">JUBEMA</span>
                         <span class="block text-[11px] text-ink-faint mt-1 truncate">Jurnal Belajar Siswa</span>
                     </div>
@@ -196,10 +264,13 @@
             </div>
 
             {{-- Tengah: Daftar Menu Sidebar --}}
-            <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-7" aria-label="Menu utama siswa">
-                @foreach ($studentNavGroups as $group)
+            <nav class="sidebar-nav flex-1 overflow-y-auto px-4 py-6 space-y-7" aria-label="Menu utama siswa">
+                @foreach ($studentNavGroups as $groupIndex => $group)
                     <div>
-                        <p class="px-3 mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
+                        @if ($groupIndex > 0)
+                            <div class="sidebar-group-divider hidden border-t border-rule/80 mb-5" aria-hidden="true"></div>
+                        @endif
+                        <p class="sidebar-group-heading px-3 mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                             {{ $group['heading'] }}
                         </p>
                         <ul class="space-y-1">
@@ -207,6 +278,7 @@
                                 @php $active = request()->routeIs(...$item['active']); @endphp
                                 <li>
                                     <a href="{{ route($item['route']) }}"
+                                       title="{{ $item['label'] }}"
                                        class="user-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-md text-[14.5px] transition-colors {{ $active ? 'bg-ink text-sheet font-medium shadow-sm' : 'text-ink-soft hover:bg-paper hover:text-ink font-medium' }}">
                                         @switch($item['icon'])
                                             @case('home')
@@ -245,7 +317,7 @@
                                                 </svg>
                                                 @break
                                         @endswitch
-                                        <span class="truncate">{{ $item['label'] }}</span>
+                                        <span class="sidebar-text truncate">{{ $item['label'] }}</span>
                                     </a>
                                 </li>
                             @endforeach
@@ -255,12 +327,12 @@
             </nav>
 
             {{-- Bawah: Profil Siswa & Tombol Keluar --}}
-            <div class="p-4 border-t border-rule bg-paper/45 space-y-3 shrink-0">
-                <div class="flex items-center gap-3 px-1">
+            <div class="sidebar-footer p-4 border-t border-rule bg-paper/45 space-y-3 shrink-0">
+                <div class="sidebar-profile-row flex items-center gap-3 px-1" title="{{ $displayName }} · {{ $displaySub }}">
                     <span class="w-9 h-9 rounded-full bg-accent text-sheet font-serif text-sm font-semibold flex items-center justify-center shrink-0">
                         {{ $initial }}
                     </span>
-                    <div class="min-w-0">
+                    <div class="sidebar-text min-w-0">
                         <p class="text-sm font-semibold text-ink truncate leading-tight">{{ $displayName }}</p>
                         <p class="text-xs text-ink-faint truncate mt-0.5">{{ $displaySub }}</p>
                     </div>
@@ -269,34 +341,66 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border border-rule bg-sheet hover:bg-ink hover:text-sheet hover:border-ink text-ink text-sm font-medium transition-colors">
+                            title="Keluar"
+                            class="sidebar-logout-btn w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border border-rule bg-sheet hover:bg-ink hover:text-sheet hover:border-ink text-ink text-sm font-medium transition-colors">
                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                         </svg>
-                        <span>Keluar</span>
+                        <span class="sidebar-text">Keluar</span>
                     </button>
                 </form>
             </div>
         </aside>
 
-        {{-- Sisi Kanan: Topbar + Konten Utama Siswa --}}
+        {{-- Sisi Kanan: Topbar + Konten Utama Siswa + Bottom Nav Mobile --}}
         <div class="flex-1 min-w-0 flex flex-col">
-            <header class="sticky top-0 z-30 w-full bg-paper/95 backdrop-blur-sm border-b border-rule px-5 sm:px-8 lg:px-10 h-[64px] lg:h-[79px] flex items-center justify-between gap-4 no-print">
-                {{-- Mobile: Logo JUBEMA --}}
-                <a href="{{ route('landing') }}" class="flex lg:hidden items-center gap-3 shrink-0">
-                    <x-logo class="w-9 h-9 shrink-0 shadow-sm rounded-[9px]" />
-                    <span class="font-serif text-[1.35rem] font-semibold tracking-tight leading-none text-ink">JUBEMA</span>
-                </a>
+            <header class="sticky top-0 z-30 w-full bg-paper/95 backdrop-blur-sm border-b border-rule px-4 sm:px-8 lg:px-10 h-[60px] lg:h-[79px] flex items-center justify-between gap-3 no-print">
+                {{-- Mobile: Logo JUBEMA + Judul Halaman Aktif --}}
+                <div class="flex lg:hidden items-center gap-2.5 min-w-0">
+                    <a href="{{ route('landing') }}" class="flex items-center gap-2.5 shrink-0">
+                        <x-logo class="w-8 h-8 shrink-0 shadow-sm rounded-[8px]" />
+                        <span class="font-serif text-[1.25rem] font-semibold tracking-tight leading-none text-ink">JUBEMA</span>
+                    </a>
+                    <span class="text-rule" aria-hidden="true">/</span>
+                    <span class="text-xs font-semibold text-ink-soft truncate">@yield('title', 'Beranda')</span>
+                </div>
 
-                {{-- Desktop: Konteks Halaman Aktif --}}
-                <div class="hidden lg:flex items-center gap-2 text-sm min-w-0">
-                    <a href="{{ route('siswa.beranda') }}" class="font-medium text-ink-faint hover:text-ink transition-colors">JUBEMA</a>
-                    <span class="text-ink-faint/60" aria-hidden="true">/</span>
-                    <span class="font-semibold text-ink truncate">@yield('title', 'Beranda')</span>
+                {{-- Desktop: Tombol Minimize Sidebar + Konteks Halaman Aktif --}}
+                <div class="hidden lg:flex items-center gap-3.5 text-sm min-w-0">
+                    <button type="button" id="user-sidebar-collapse"
+                            aria-label="Perkecil atau perluas sidebar"
+                            title="Perkecil / perluas sidebar"
+                            class="w-9 h-9 rounded-md border border-rule bg-sheet hover:border-ink text-ink-soft hover:text-ink flex items-center justify-center transition-colors shrink-0">
+                        <svg id="sidebar-icon-collapse" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><path d="M15 9l-3 3 3 3"/>
+                        </svg>
+                        <svg id="sidebar-icon-expand" class="w-[18px] h-[18px] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><path d="M13 9l3 3-3 3"/>
+                        </svg>
+                    </button>
+
+                    <div class="flex items-center gap-2 min-w-0">
+                        <a href="{{ route('siswa.beranda') }}" class="font-medium text-ink-faint hover:text-ink transition-colors">JUBEMA</a>
+                        <span class="text-ink-faint/60" aria-hidden="true">/</span>
+                        <span class="font-semibold text-ink truncate">@yield('title', 'Beranda')</span>
+                    </div>
                 </div>
 
                 {{-- Kanan Topbar --}}
-                <div class="flex items-center gap-3 shrink-0">
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    {{-- Indikator Timer Fokus Aktif (tampil lintas halaman saat berjalan / dijeda) --}}
+                    <div id="global-timer-pill"
+                         class="hidden items-center gap-1.5 sm:gap-2 pl-2.5 pr-1.5 py-1 rounded-md bg-ink text-sheet text-xs font-medium shadow-sm">
+                        <a href="{{ route('siswa.ceklis') }}" class="flex items-center gap-1.5 hover:opacity-90 transition-opacity" title="Buka halaman Ceklis & Timer Fokus">
+                            <span id="global-timer-dot" class="w-2 h-2 rounded-full bg-[#F9DD7A] animate-pulse shrink-0" aria-hidden="true"></span>
+                            <span id="global-timer-display" class="font-mono font-semibold tracking-tight tabular-nums">25:00</span>
+                        </a>
+                        <button type="button" id="global-timer-toggle" onclick="window.JubemaTimer?.toggle()"
+                                class="px-2 py-0.5 rounded bg-sheet/15 hover:bg-sheet/25 text-[11px] font-semibold text-sheet transition-colors">
+                            Jeda
+                        </button>
+                    </div>
+
                     <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-sheet border border-rule text-xs font-medium text-ink-soft">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true"></span>
                         <span>{{ $displayName }} · {{ $displaySub }}</span>
@@ -310,7 +414,7 @@
                     @endunless
 
                     <button type="button" id="user-sidebar-open" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="user-sidebar"
-                            class="lg:hidden w-10 h-10 rounded-md border border-rule bg-sheet text-ink flex items-center justify-center hover:bg-paper transition-colors">
+                            class="lg:hidden w-9 h-9 rounded-md border border-rule bg-sheet text-ink flex items-center justify-center hover:bg-paper transition-colors">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
                             <path d="M4 7h16M4 12h16M4 17h16"/>
                         </svg>
@@ -318,9 +422,62 @@
                 </div>
             </header>
 
-            <main class="flex-1 w-full max-w-[1180px] mx-auto px-5 sm:px-8 lg:px-10 py-7 sm:py-9">
+            <main class="flex-1 w-full max-w-[1180px] mx-auto px-4 sm:px-8 lg:px-10 pt-6 pb-24 sm:py-9 lg:pb-9">
                 @yield('content')
             </main>
+
+            {{-- Bottom Navigation Bar Khusus Mobile Siswa (< lg) --}}
+            @php
+                $mobileBottomTabs = [
+                    ['route' => 'siswa.beranda', 'active' => ['siswa.beranda'], 'label' => 'Beranda', 'icon' => 'home'],
+                    ['route' => 'siswa.perencana', 'active' => ['siswa.perencana'], 'label' => 'Perencana', 'icon' => 'calendar'],
+                    ['route' => 'siswa.ceklis', 'active' => ['siswa.ceklis'], 'label' => 'Ceklis', 'icon' => 'check'],
+                    ['route' => 'siswa.refleksi', 'active' => ['siswa.refleksi'], 'label' => 'Refleksi', 'icon' => 'book'],
+                    ['route' => 'siswa.konsultasi', 'active' => ['siswa.konsultasi'], 'label' => 'Konsultasi', 'icon' => 'chat'],
+                ];
+            @endphp
+            <nav aria-label="Navigasi bawah mobile"
+                 class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-sheet/95 backdrop-blur-md border-t border-rule no-print">
+                <div class="grid grid-cols-5 h-[62px] max-w-lg mx-auto px-1">
+                    @foreach ($mobileBottomTabs as $tab)
+                        @php $active = request()->routeIs(...$tab['active']); @endphp
+                        <a href="{{ route($tab['route']) }}"
+                           class="flex flex-col items-center justify-center gap-1 text-[11px] transition-colors relative {{ $active ? 'text-ink font-semibold' : 'text-ink-faint hover:text-ink' }}">
+                            @if ($active)
+                                <span class="absolute top-0 inset-x-4 h-0.5 bg-accent rounded-full" aria-hidden="true"></span>
+                            @endif
+                            @switch($tab['icon'])
+                                @case('home')
+                                    <svg class="w-[18px] h-[18px] {{ $active ? 'text-accent' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $active ? '2.1' : '1.75' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9.5 20v-6h5v6"/>
+                                    </svg>
+                                    @break
+                                @case('calendar')
+                                    <svg class="w-[18px] h-[18px] {{ $active ? 'text-accent' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $active ? '2.1' : '1.75' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                                    </svg>
+                                    @break
+                                @case('check')
+                                    <svg class="w-[18px] h-[18px] {{ $active ? 'text-accent' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $active ? '2.1' : '1.75' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                    </svg>
+                                    @break
+                                @case('book')
+                                    <svg class="w-[18px] h-[18px] {{ $active ? 'text-accent' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $active ? '2.1' : '1.75' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                    </svg>
+                                    @break
+                                @case('chat')
+                                    <svg class="w-[18px] h-[18px] {{ $active ? 'text-accent' : '' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $active ? '2.1' : '1.75' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    @break
+                            @endswitch
+                            <span class="truncate">{{ $tab['label'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            </nav>
         </div>
     </div>
 @endif
@@ -372,6 +529,26 @@
             link.addEventListener('click', () => setMenuOpen(false));
         });
 
+        // Minimize / expand sidebar desktop untuk halaman Siswa
+        const sidebarCollapseBtn = document.getElementById('user-sidebar-collapse');
+
+        function syncCollapseButtonState() {
+            if (!sidebarCollapseBtn) return;
+            const collapsed = document.documentElement.classList.contains('sidebar-collapsed');
+            sidebarCollapseBtn.setAttribute('aria-pressed', String(collapsed));
+            sidebarCollapseBtn.setAttribute('title', collapsed ? 'Perluas sidebar' : 'Perkecil sidebar');
+        }
+
+        syncCollapseButtonState();
+
+        sidebarCollapseBtn?.addEventListener('click', () => {
+            const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('jubema_sidebar_collapsed', collapsed ? '1' : '0');
+            } catch (e) {}
+            syncCollapseButtonState();
+        });
+
         // Drawer sidebar mobile untuk halaman Siswa
         const sidebar = document.getElementById('user-sidebar');
         const sidebarBackdrop = document.getElementById('user-sidebar-backdrop');
@@ -406,6 +583,128 @@
                 }
             }
         });
+
+        // Bersihkan timer fokus saat siswa keluar
+        document.querySelectorAll('form[action="{{ route('logout') }}"]').forEach((form) => {
+            form.addEventListener('submit', () => {
+                try {
+                    localStorage.removeItem('jubema_focus_timer_v1');
+                } catch (e) {}
+            });
+        });
+
+        @if (! $isAdmin)
+            // Timer Fokus 25 Menit persisten lintas halaman (berbasis timestamp)
+            const TIMER_KEY = 'jubema_focus_timer_v1';
+            const TIMER_DURATION = 25 * 60;
+            const baseTitle = document.title;
+
+            function readTimerState() {
+                try {
+                    const raw = localStorage.getItem(TIMER_KEY);
+                    if (!raw) return { status: 'idle', remaining: TIMER_DURATION, endAt: null };
+                    const parsed = JSON.parse(raw);
+                    if (!parsed || typeof parsed !== 'object') {
+                        return { status: 'idle', remaining: TIMER_DURATION, endAt: null };
+                    }
+                    return {
+                        status: ['idle', 'running', 'paused'].includes(parsed.status) ? parsed.status : 'idle',
+                        remaining: Number.isFinite(parsed.remaining) ? Math.max(0, Math.min(TIMER_DURATION, Math.round(parsed.remaining))) : TIMER_DURATION,
+                        endAt: Number.isFinite(parsed.endAt) ? parsed.endAt : null,
+                    };
+                } catch (e) {
+                    return { status: 'idle', remaining: TIMER_DURATION, endAt: null };
+                }
+            }
+
+            function writeTimerState(state) {
+                try {
+                    localStorage.setItem(TIMER_KEY, JSON.stringify(state));
+                } catch (e) {}
+            }
+
+            function formatClock(totalSeconds) {
+                const safe = Math.max(0, Math.floor(totalSeconds));
+                const m = String(Math.floor(safe / 60)).padStart(2, '0');
+                const s = String(safe % 60).padStart(2, '0');
+                return `${m}:${s}`;
+            }
+
+            function syncTimerUI() {
+                let state = readTimerState();
+                let remaining = state.remaining;
+
+                if (state.status === 'running' && state.endAt) {
+                    remaining = Math.ceil((state.endAt - Date.now()) / 1000);
+                    if (remaining <= 0) {
+                        state = { status: 'idle', remaining: TIMER_DURATION, endAt: null };
+                        remaining = TIMER_DURATION;
+                        writeTimerState(state);
+                        showToast('Sesi fokus 25 menit selesai!', 'success');
+                    }
+                }
+
+                const formatted = formatClock(remaining);
+
+                // Sinkron tampilan besar di halaman Ceklis (jika sedang dibuka)
+                const pageDisplay = document.getElementById('pomodoro-display');
+                const pageBtn = document.getElementById('pomodoro-btn');
+                if (pageDisplay) pageDisplay.textContent = formatted;
+                if (pageBtn) {
+                    pageBtn.textContent = state.status === 'running'
+                        ? 'Jeda'
+                        : (state.status === 'paused' ? 'Lanjut' : 'Mulai');
+                }
+
+                // Sinkron indikator mini di topbar (tampil di semua halaman siswa saat aktif/jeda)
+                const pill = document.getElementById('global-timer-pill');
+                const pillDisplay = document.getElementById('global-timer-display');
+                const pillDot = document.getElementById('global-timer-dot');
+                const pillBtn = document.getElementById('global-timer-toggle');
+
+                if (pill) {
+                    const showPill = state.status === 'running' || state.status === 'paused';
+                    pill.classList.toggle('hidden', !showPill);
+                    pill.classList.toggle('inline-flex', showPill);
+                }
+                if (pillDisplay) pillDisplay.textContent = formatted;
+                if (pillDot) {
+                    pillDot.classList.toggle('animate-pulse', state.status === 'running');
+                    pillDot.classList.toggle('bg-[#F9DD7A]', state.status === 'running');
+                    pillDot.classList.toggle('bg-sheet/50', state.status !== 'running');
+                }
+                if (pillBtn) {
+                    pillBtn.textContent = state.status === 'running' ? 'Jeda' : 'Lanjut';
+                }
+
+                document.title = state.status === 'running' ? `${formatted} · ${baseTitle}` : baseTitle;
+            }
+
+            window.JubemaTimer = {
+                toggle() {
+                    const state = readTimerState();
+                    if (state.status === 'running' && state.endAt) {
+                        const rem = Math.max(1, Math.ceil((state.endAt - Date.now()) / 1000));
+                        writeTimerState({ status: 'paused', remaining: rem, endAt: null });
+                    } else {
+                        const rem = state.remaining > 0 ? state.remaining : TIMER_DURATION;
+                        writeTimerState({ status: 'running', remaining: rem, endAt: Date.now() + rem * 1000 });
+                    }
+                    syncTimerUI();
+                },
+                reset() {
+                    writeTimerState({ status: 'idle', remaining: TIMER_DURATION, endAt: null });
+                    syncTimerUI();
+                },
+                sync: syncTimerUI,
+            };
+
+            syncTimerUI();
+            setInterval(syncTimerUI, 500);
+            window.addEventListener('storage', (e) => {
+                if (e.key === TIMER_KEY) syncTimerUI();
+            });
+        @endif
 
         @foreach (['success', 'error', 'info'] as $type)
             @if (session($type))

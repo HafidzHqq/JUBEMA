@@ -9,18 +9,18 @@
 @endphp
 
 {{-- Pembuka Halaman: Selaras dengan gaya editorial Beranda, Perencana & Refleksi --}}
-<section class="pb-10 border-b border-ink">
-    <p class="text-sm text-ink-faint mb-3">Langkah 4 · Layanan Konsultasi BK</p>
-    <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+<section class="pb-7 sm:pb-10 border-b border-ink">
+    <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Langkah 4 · Layanan Konsultasi BK</p>
+    <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
         Formulir <span class="marker italic">Konsultasi.</span>
     </h1>
-    <p class="mt-4 text-base text-ink-soft max-w-3xl leading-relaxed whitespace-pre-line">
+    <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-3xl leading-relaxed whitespace-pre-line">
         {{ $cfg['intro'] }}
     </p>
 </section>
 
 {{-- Grid 2 Kolom Simetris: Header, garis pemisah, dan tinggi kartu sejajar --}}
-<div class="mt-10 grid xl:grid-cols-12 gap-8 items-stretch">
+<div class="mt-7 sm:mt-10 grid xl:grid-cols-12 gap-6 sm:gap-8 items-stretch">
 
     {{-- Kolom Kiri (7 kolom): Formulir Konsultasi Web Dinamis --}}
     <section class="xl:col-span-7 bg-sheet border border-rule flex flex-col">
@@ -229,9 +229,19 @@
                             <span class="text-xs text-ink-faint">
                                 {{ $item->created_at?->translatedFormat('d F Y, H:i') }}
                             </span>
-                            <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $item->status === 'sudah_dijadwalkan' ? 'bg-accent/10 text-accent' : 'bg-[#F9DD7A]/55 text-ink' }}">
-                                {{ $item->statusLabel() }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $item->status === 'sudah_dijadwalkan' ? 'bg-accent/10 text-accent' : 'bg-[#F9DD7A]/55 text-ink' }}">
+                                    {{ $item->statusLabel() }}
+                                </span>
+                                <form method="POST" action="{{ route('siswa.consultations.destroy', $item) }}"
+                                      onsubmit="return confirm('Hapus formulir konsultasi ini?');">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                            class="px-2.5 py-0.5 rounded border border-rule bg-paper hover:border-red-300 hover:bg-red-50 text-[11px] font-medium text-red-700 transition-colors">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                         <h3 class="font-serif text-xl font-medium text-ink leading-snug">{{ $item->displayTopic() }}</h3>

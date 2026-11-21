@@ -11,15 +11,15 @@
     $questionTypes = \App\Support\ConsultationFormConfig::QUESTION_TYPES;
 @endphp
 
-<section class="grid lg:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
+<section class="grid lg:grid-cols-12 gap-5 sm:gap-8 pb-7 sm:pb-10 border-b border-ink items-end">
     <div class="lg:col-span-8">
-        <a href="{{ route('admin.konsultasi-masuk') }}" class="inline-block text-sm text-ink-soft hover:text-ink mb-3 transition-colors">
+        <a href="{{ route('admin.konsultasi-masuk') }}" class="inline-block text-xs sm:text-sm text-ink-soft hover:text-ink mb-2 sm:mb-3 transition-colors">
             ← Kembali ke Konsultasi Masuk
         </a>
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+        <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
             Edit pertanyaan <span class="marker italic">formulir konsultasi.</span>
         </h1>
-        <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+        <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
             Tambah pertanyaan baru, hapus pertanyaan yang tidak diperlukan, ubah jenis jawaban, atau atur urutannya.
             Perubahan langsung aktif di halaman siswa tanpa menghapus respons lama.
         </p>
@@ -29,7 +29,7 @@
               onsubmit="return confirm('Kembalikan seluruh daftar pertanyaan dan pilihan formulir ke bawaan awal?');">
             @csrf
             <button type="submit"
-                    class="px-4 py-2.5 rounded-md border border-rule bg-sheet hover:border-ink text-xs sm:text-sm font-medium text-ink-soft hover:text-ink transition-colors">
+                    class="w-full sm:w-auto px-4 py-2.5 rounded-md border border-rule bg-sheet hover:border-ink text-xs sm:text-sm font-medium text-ink-soft hover:text-ink transition-colors">
                 Kembalikan ke Bawaan
             </button>
         </form>

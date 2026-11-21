@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consultation;
+use App\Models\Material;
+use App\Models\Reflection;
 use App\Models\Subtask;
 use App\Models\Task;
 use App\Support\ConsultationFormConfig;
@@ -94,6 +96,7 @@ class SiswaController extends Controller
             'tasks' => $tasks,
             'reflections' => $reflections,
             'consultations' => $consultations,
+            'materials' => $page === 'materi' ? Material::orderBy('sort_order')->orderBy('id')->get() : collect(),
             'formConfig' => $page === 'konsultasi' ? ConsultationFormConfig::get() : null,
             'totalTasks' => $total,
             'doneTasks' => $done,
@@ -222,6 +225,15 @@ class SiswaController extends Controller
         return back()->with('success', 'Refleksi mingguan tersimpan!');
     }
 
+    public function deleteReflection(Request $request, Reflection $reflection): RedirectResponse
+    {
+        abort_unless($reflection->student_id === StudentSession::current($request)->id, 403);
+
+        $reflection->delete();
+
+        return back()->with('info', 'Catatan refleksi dihapus.');
+    }
+
     // ------------------------------------------------------------------
     // Permintaan Konsultasi
     // ------------------------------------------------------------------
@@ -324,5 +336,14 @@ class SiswaController extends Controller
         ]);
 
         return back()->with('success', 'Formulir konsultasi berhasil dikirim ke Guru BK!');
+    }
+
+    public function deleteConsultation(Request $request, Consultation $consultation): RedirectResponse
+    {
+        abort_unless($consultation->student_id === StudentSession::current($request)->id, 403);
+
+        $consultation->delete();
+
+        return back()->with('info', 'Formulir konsultasi dihapus.');
     }
 }

@@ -172,8 +172,8 @@ class AuthenticationTest extends TestCase
     public function test_admin_dapat_menambah_dan_menghapus_akun_guru_bk_lain(): void
     {
         $admin = User::create([
-            'name' => 'Haqiqih',
-            'email' => 'haqiqihf@gmail.com',
+            'name' => 'Hesni Maharani',
+            'email' => 'hesnimaharani31@gmail.com',
             'password' => Hash::make('rahasia123'),
             'role' => 'admin',
         ]);
@@ -204,11 +204,37 @@ class AuthenticationTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['id' => $baru->id]);
 
-        // Tidak boleh menghapus akun sendiri
+        // Tidak boleh keluar/menghapus akun sendiri jika merupakan satu-satunya admin
         $this->actingAs($admin)
             ->delete("/admin/akun-guru/{$admin->id}")
             ->assertRedirect();
 
         $this->assertDatabaseHas('users', ['id' => $admin->id]);
+    }
+
+    public function test_admin_utama_dapat_keluar_dari_admin_jika_ada_admin_lain_aktif(): void
+    {
+        $utama = User::create([
+            'name' => 'Hesni Maharani',
+            'email' => 'hesnimaharani31@gmail.com',
+            'password' => Hash::make('rahasia123'),
+            'role' => 'admin',
+        ]);
+
+        $rekan = User::create([
+            'name' => 'Ibu Siti',
+            'email' => 'siti.bk@gmail.com',
+            'password' => Hash::make('rahasia123'),
+            'role' => 'admin',
+        ]);
+
+        $this->actingAs($utama)
+            ->delete("/admin/akun-guru/{$utama->id}")
+            ->assertRedirect(route('login'))
+            ->assertSessionHas('info');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['id' => $utama->id]);
+        $this->assertDatabaseHas('users', ['id' => $rekan->id, 'role' => 'admin']);
     }
 }

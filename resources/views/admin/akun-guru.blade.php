@@ -3,18 +3,18 @@
 @section('title', 'Akun Guru BK · Ruang Guru BK')
 
 @section('content')
-<section class="pb-10 border-b border-ink">
-    <p class="text-sm text-ink-faint mb-3">Ruang Guru BK · Manajemen Akses</p>
-    <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+<section class="pb-7 sm:pb-10 border-b border-ink">
+    <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Ruang Guru BK · Manajemen Akses</p>
+    <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
         Kelola akun <span class="marker italic">Guru BK.</span>
     </h1>
-    <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+    <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
         Tambahkan alamat email Google rekan Guru BK yang diizinkan mengelola JUBEMA. Saat masuk
         menggunakan akun Google tersebut, mereka akan otomatis diarahkan ke Ruang Guru BK.
     </p>
 </section>
 
-<div class="mt-10 grid lg:grid-cols-12 gap-8 items-stretch">
+<div class="mt-7 sm:mt-10 grid lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
 
     {{-- Kolom Kiri: Form Tambah Akun Guru BK --}}
     <section class="lg:col-span-5 bg-sheet border border-rule flex flex-col">
@@ -115,8 +115,20 @@
                         </div>
 
                         <div class="shrink-0">
-                            @if ($isCurrent || $isEnvProtected)
-                                <span class="text-xs text-ink-faint">Terlindungi</span>
+                            @php $canRemove = $admins->count() > 1; @endphp
+                            @if (! $canRemove)
+                                <span class="text-xs text-ink-faint" title="Tambahkan minimal satu admin aktif lain sebelum keluar dari admin">
+                                    Satu-satunya admin
+                                </span>
+                            @elseif ($isCurrent)
+                                <form method="POST" action="{{ route('admin.admins.destroy', $item) }}"
+                                      onsubmit="return confirm({{ \Illuminate\Support\Js::from('Keluar dari akses Admin Guru BK untuk '.$item->email.'? Pengelolaan akan diteruskan oleh admin aktif lainnya.') }});">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                            class="px-3.5 py-1.5 rounded-md border border-red-300 bg-red-50 hover:bg-red-100 text-xs font-semibold text-red-700 transition-colors">
+                                        Keluar dari admin
+                                    </button>
+                                </form>
                             @else
                                 <form method="POST" action="{{ route('admin.admins.destroy', $item) }}"
                                       onsubmit="return confirm({{ \Illuminate\Support\Js::from('Cabut akses Ruang Guru BK untuk '.$item->email.'?') }});">

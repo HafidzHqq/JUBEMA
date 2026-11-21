@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Consultation;
+use App\Models\Material;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ConsultationAndPagesTest extends TestCase
@@ -183,5 +186,145 @@ class ConsultationAndPagesTest extends TestCase
         $this->assertNull($consultation->scheduled_at);
         $this->assertNull($consultation->scheduled_location);
         $this->assertNull($consultation->scheduled_note);
+    }
+
+    public function test_admin_dapat_mengunggah_dan_menghapus_materi_pdf_dan_tautan(): void
+    {
+        Storage::fake('public');
+
+        $admin = $this->createAdmin();
+        $student = $this->createStudent();
+
+        $pdf = UploadedFile::fake()->create('panduan-fokus.pdf', 120, 'application/pdf');
+
+        // Unggah file PDF
+        $this->actingAs($admin)
+            ->post('/admin/materi', [
+                'title' => 'Panduan Fokus 25 Menit',
+                'meta' => 'Bacaan 5 menit · Fokus',
+                'summary' => 'Langkah praktis memulai belajar 25 menit.',
+                'source_type' => 'file',
+                'material_file' => $pdf,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $material = Material::where('title', 'Panduan Fokus 25 Menit')->firstOrFail();
+        $this->assertSame('file', $material->source_type);
+        Storage::disk('public')->assertExists($material->file_path);
+
+        // Siswa melihat materi di halaman Materi dan bisa mengakses berkas PDF-nya
+        $this->withSession(['student_id' => $student->id])
+            ->get('/siswa/materi')
+            ->assertOk()
+            ->assertSee('Panduan Fokus 25 Menit');
+
+        $this->withSession(['student_id' => $student->id])
+            ->get(route('materi.file', $material))
+            ->assertOk();
+
+        // Admin menghapus materi -> file ikut terhapus
+        $filePath = $material->file_path;
+        $this->actingAs($admin)
+            ->delete(route('admin.materials.destroy', $material))
+            ->assertRedirect()
+            ->assertSessionHas('info');
+
+        $this->assertDatabaseMissing('materials', ['id' => $material->id]);
+        Storage::disk('public')->assertMissing($filePath);
+    }
+
+    public function test_siswa_dan_admin_dapat_menghapus_refleksi_dan_konsultasi(): void
+    {
+        $admin = $this->createAdmin();
+        $student = $this->createStudent();
+        $otherStudent = Student::create(['name' => 'Budi', 'kelas' => 'Kelas IX']);
+
+        $reflection = $student->reflections()->create([
+            'week' => 'Minggu ke-2',
+            'mood' => 'Lega & Bangga',
+            'good' => 'Tepat waktu',
+            'obstacle' => 'HP',
+            'plan' => 'Silent HP',
+            'shared_with_bk' => true,
+        ]);
+
+        // Siswa lain tidak boleh menghapus refleksi siswa ini
+        $this->withSession(['student_id' => $otherStudent->id])
+            ->delete(route('siswa.reflections.destroy', $reflection))
+            ->assertForbidden();
+
+        // Pemilik boleh menghapus refleksinya sendiri
+        $this->withSession(['student_id' => $student->id])
+            ->delete(route('siswa.reflections.destroy', $reflection))
+            ->assertRedirect();
+        $this->assertDatabaseMissing('reflections', ['id' => $reflection->id]);
+
+        $c1 = Consultation::create([
+            'student_id' => $student->id,
+            'respondent_name' => $student->name,
+            'respondent_kelas' => 'VIII',
+            'topic' => 'Konsultasi 1',
+            'mode' => 'Istirahat',
+            'status' => 'terkirim',
+        ]);
+
+        $c2 = Consultation::create([
+            'student_id' => $student->id,
+            'respondent_name' => $student->name,
+            'respondent_kelas' => 'VIII',
+            'topic' => 'Konsultasi 2',
+            'mode' => 'Pulang sekolah',
+            'status' => 'terkirim',
+        ]);
+
+        // Siswa lain tidak boleh menghapus konsultasi siswa ini
+        $this->withSession(['student_id' => $otherStudent->id])
+            ->delete(route('siswa.consultations.destroy', $c1))
+            ->assertForbidden();
+
+        // Siswa menghapus konsultasinya sendiri
+        $this->withSession(['student_id' => $student->id])
+            ->delete(route('siswa.consultations.destroy', $c1))
+            ->assertRedirect();
+        $this->assertDatabaseMissing('consultations', ['id' => $c1->id]);
+
+        // Admin menghapus konsultasi masuk
+        $this->actingAs($admin)
+            ->delete(route('admin.konsultasi.destroy', $c2))
+            ->assertRedirect();
+        $this->assertDatabaseMissing('consultations', ['id' => $c2->id]);
+    }
+
+    public function test_ekspor_rekap_kelas_admin_berformat_excel_xlsx_multi_sheet(): void
+    {
+        $admin = $this->createAdmin();
+        $student = $this->createStudent();
+
+        $student->tasks()->create([
+            'day' => 'Senin',
+            'subject' => 'Matematika',
+            'title' => 'Latihan Aljabar',
+            'priority' => 'Penting & Mendesak',
+            'time' => '16.00',
+            'completed' => true,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.export.master'))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $file = $response->getFile();
+        $zip = new \ZipArchive;
+        $this->assertTrue($zip->open($file->getPathname()) === true);
+        $workbookXml = $zip->getFromName('xl/workbook.xml');
+        $sheet1Xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        $this->assertStringContainsString('Rencana Belajar', (string) $workbookXml);
+        $this->assertStringContainsString('Refleksi Siswa', (string) $workbookXml);
+        $this->assertStringContainsString('Konsultasi BK', (string) $workbookXml);
+        $this->assertStringContainsString('Latihan Aljabar', (string) $sheet1Xml);
     }
 }

@@ -167,41 +167,41 @@
 
     {{-- ===================== Pembuka ===================== --}}
     <section class="relative z-10 flex-1 flex items-center w-full">
-      <div class="w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 py-8 lg:py-10 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div class="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-14 py-7 sm:py-10 grid lg:grid-cols-12 gap-7 lg:gap-12 items-center">
         <div class="lg:col-span-6">
-            <p class="text-sm text-ink-faint mb-5">Untuk siswa SMP kelas VII, VIII, dan IX</p>
+            <p class="text-xs sm:text-sm text-ink-faint mb-3.5 sm:mb-5">Untuk siswa SMP kelas VII, VIII, dan IX</p>
 
-            <h1 class="font-serif text-[2.6rem] sm:text-[3.5rem] xl:text-[4.25rem] leading-[1.04] tracking-tight font-medium">
+            <h1 class="font-serif text-[2.2rem] sm:text-[3.5rem] xl:text-[4.25rem] leading-[1.06] sm:leading-[1.04] tracking-tight font-medium">
                 Tugas menumpuk <span class="marker italic">bukan berarti kamu malas.</span>
             </h1>
 
-            <p class="mt-6 text-base sm:text-lg text-ink-soft leading-relaxed max-w-[36rem]">
+            <p class="mt-4 sm:mt-6 text-[15px] sm:text-lg text-ink-soft leading-relaxed max-w-[36rem]">
                 Sering kali tugasnya saja yang terasa terlalu besar. JUBEMA membantumu memecahnya jadi
                 langkah kecil, mengerjakannya 25 menit sekali duduk, lalu melihat lagi apa yang berhasil
                 minggu ini. Kalau tetap macet, Guru BK bisa kamu ajak ngobrol.
             </p>
 
-            <div class="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+            <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-x-7 sm:gap-y-4">
                 @if ($adminUser)
-                    <a href="{{ route('admin.dashboard') }}" class="px-6 py-3.5 rounded-md bg-ink text-sheet font-semibold hover:bg-black">
+                    <a href="{{ route('admin.dashboard') }}" class="px-6 py-3.5 rounded-md bg-ink text-sheet font-semibold text-center hover:bg-black">
                         Kembali ke Ruang Guru BK
                     </a>
                 @elseif ($currentStudent)
-                    <a href="{{ route('siswa.beranda') }}" class="px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">
+                    <a href="{{ route('siswa.beranda') }}" class="px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold text-center hover:bg-accent-dark">
                         Buka Jurnal Belajar
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">
+                    <a href="{{ route('login') }}" class="px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold text-center hover:bg-accent-dark">
                         Mulai Jurnal Belajar
                     </a>
                 @endif
             </div>
 
-            <p class="mt-5 text-sm text-ink-faint">Cukup masuk pakai akun Google, tanpa perlu buat kata sandi baru.</p>
+            <p class="mt-4 sm:mt-5 text-xs sm:text-sm text-ink-faint">Cukup masuk pakai akun Google, tanpa perlu buat kata sandi baru.</p>
         </div>
 
-        {{-- Ilustrasi untuk layar kecil/tablet agar tidak tumpang tindih dengan teks --}}
-        <div class="lg:hidden w-full max-w-[340px] mx-auto">
+        {{-- Ilustrasi untuk layar kecil/tablet agar proporsional dan tidak terlalu tinggi --}}
+        <div class="lg:hidden w-full max-w-[230px] sm:max-w-[320px] mx-auto">
             <div class="hero-art-blend w-full aspect-square"
                  style="background-image: url('{{ asset('_.jpeg') }}');"
                  aria-hidden="true"></div>
@@ -222,12 +222,12 @@
 
     {{-- ===================== Cara kerja ===================== --}}
     <section id="cara-kerja" class="scroll-mt-24 bg-sheet">
-        <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 py-20">
-            <div class="grid lg:grid-cols-12 gap-8 mb-14">
-                <h2 class="lg:col-span-5 font-serif text-3xl sm:text-4xl font-medium leading-tight tracking-tight">
+        <div class="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-14 py-12 sm:py-20">
+            <div class="grid lg:grid-cols-12 gap-5 sm:gap-8 mb-10 sm:mb-14">
+                <h2 class="lg:col-span-5 font-serif text-[1.75rem] sm:text-4xl font-medium leading-tight tracking-tight">
                     Satu minggu di JUBEMA
                 </h2>
-                <p class="lg:col-span-6 lg:col-start-7 text-ink-soft leading-relaxed">
+                <p class="lg:col-span-6 lg:col-start-7 text-[15px] sm:text-base text-ink-soft leading-relaxed">
                     Tidak ada target sempurna. Setiap minggu kamu merencanakan, mengerjakan, lalu melihat
                     ke belakang sebentar. Pelan-pelan kamu jadi tahu cara belajar yang cocok untukmu.
                 </p>
@@ -277,12 +277,12 @@
 
     {{-- ===================== Privasi ===================== --}}
     <section id="privasi" class="scroll-mt-24 border-t border-rule">
-        <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 py-20 grid lg:grid-cols-12 gap-12">
+        <div class="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-14 py-12 sm:py-20 grid lg:grid-cols-12 gap-8 sm:gap-12">
             <div class="lg:col-span-4">
-                <h2 class="font-serif text-3xl sm:text-4xl font-medium leading-tight tracking-tight">
+                <h2 class="font-serif text-[1.75rem] sm:text-4xl font-medium leading-tight tracking-tight">
                     Apa yang dicatat, dan apa yang tidak
                 </h2>
-                <p class="mt-5 text-ink-soft leading-relaxed">
+                <p class="mt-3.5 sm:mt-5 text-[15px] sm:text-base text-ink-soft leading-relaxed">
                     Siswa baru mau jujur menulis kesulitannya kalau tahu catatannya aman.
                     Jadi kami sengaja menyimpan sesedikit mungkin.
                 </p>
@@ -316,17 +316,17 @@
 
     {{-- ===================== Penutup ===================== --}}
     <section class="bg-sheet border-t border-rule">
-        <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 py-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div class="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-14 py-12 sm:py-20 flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
             <div>
-                <h2 class="font-serif text-3xl sm:text-4xl font-medium tracking-tight">Mulai dari satu tugas saja.</h2>
-                <p class="mt-3 text-ink-soft">Yang paling dekat tenggatnya. Sisanya bisa menyusul.</p>
+                <h2 class="font-serif text-[1.75rem] sm:text-4xl font-medium tracking-tight">Mulai dari satu tugas saja.</h2>
+                <p class="mt-2 sm:mt-3 text-[15px] sm:text-base text-ink-soft">Yang paling dekat tenggatnya. Sisanya bisa menyusul.</p>
             </div>
             @if ($adminUser)
-                <a href="{{ route('admin.dashboard') }}" class="self-start md:self-auto px-6 py-3.5 rounded-md bg-ink text-sheet font-semibold hover:bg-black">Kembali ke Ruang Guru BK</a>
+                <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto text-center px-6 py-3.5 rounded-md bg-ink text-sheet font-semibold hover:bg-black">Kembali ke Ruang Guru BK</a>
             @elseif ($currentStudent)
-                <a href="{{ route('siswa.beranda') }}" class="self-start md:self-auto px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">Buka Jurnal Belajar</a>
+                <a href="{{ route('siswa.beranda') }}" class="w-full sm:w-auto text-center px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">Buka Jurnal Belajar</a>
             @else
-                <a href="{{ route('login') }}" class="self-start md:self-auto px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">Mulai Jurnal Belajar</a>
+                <a href="{{ route('login') }}" class="w-full sm:w-auto text-center px-6 py-3.5 rounded-md bg-accent text-sheet font-semibold hover:bg-accent-dark">Mulai Jurnal Belajar</a>
             @endif
         </div>
     </section>
@@ -372,7 +372,7 @@
                         <li><a href="{{ route('admin.dashboard') }}" class="text-sheet/70 hover:text-sheet transition-colors">Ruang Guru BK</a></li>
                         <li><a href="{{ route('admin.konsultasi-masuk') }}" class="text-sheet/70 hover:text-sheet transition-colors">Konsultasi masuk</a></li>
                         <li><a href="{{ route('admin.rpl-admin') }}" class="text-sheet/70 hover:text-sheet transition-colors">Dokumen RPL</a></li>
-                        <li><a href="{{ route('admin.integrasi') }}" class="text-sheet/70 hover:text-sheet transition-colors">Tautan sekolah</a></li>
+                        <li><a href="{{ route('admin.integrasi') }}" class="text-sheet/70 hover:text-sheet transition-colors">Upload materi</a></li>
                     @elseif ($currentStudent)
                         <li><a href="{{ route('siswa.beranda') }}" class="text-sheet/70 hover:text-sheet transition-colors">Beranda jurnal</a></li>
                         <li><a href="{{ route('siswa.perencana') }}" class="text-sheet/70 hover:text-sheet transition-colors">Perencana tugas</a></li>

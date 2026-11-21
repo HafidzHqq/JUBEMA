@@ -53,9 +53,11 @@ Route::middleware('siswa')->prefix('siswa')->name('siswa.')->group(function () {
 
     // Refleksi mingguan
     Route::post('/refleksi', [SiswaController::class, 'storeReflection'])->name('reflections.store');
+    Route::delete('/refleksi/{reflection}', [SiswaController::class, 'deleteReflection'])->name('reflections.destroy');
 
     // Permintaan konsultasi
     Route::post('/konsultasi', [SiswaController::class, 'storeConsultation'])->name('consultations.store');
+    Route::delete('/konsultasi/{consultation}', [SiswaController::class, 'deleteConsultation'])->name('consultations.destroy');
 
     // Ekspor tugas milik sendiri ke CSV
     Route::get('/ekspor', [AdminController::class, 'exportSiswaTasks'])->name('export');
@@ -78,8 +80,13 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
 
     Route::patch('/konsultasi/{consultation}/tandai', [AdminController::class, 'markConsultation'])
         ->name('konsultasi.mark');
+    Route::delete('/konsultasi/{consultation}', [AdminController::class, 'destroyConsultation'])
+        ->name('konsultasi.destroy');
 
     Route::put('/integrasi', [AdminController::class, 'saveLinks'])->name('links.save');
+    Route::post('/materi', [AdminController::class, 'storeMaterial'])->name('materials.store');
+    Route::put('/materi/{material}', [AdminController::class, 'updateMaterial'])->name('materials.update');
+    Route::delete('/materi/{material}', [AdminController::class, 'destroyMaterial'])->name('materials.destroy');
 
     Route::post('/akun-guru', [AdminController::class, 'storeAdmin'])->name('admins.store');
     Route::delete('/akun-guru/{user}', [AdminController::class, 'destroyAdmin'])->name('admins.destroy');
@@ -87,3 +94,7 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/ekspor-master', [AdminController::class, 'exportSpreadsheet'])
         ->name('export.master');
 });
+
+// Berkas PDF materi (dapat dibaca langsung di halaman web oleh siswa maupun Guru BK)
+Route::get('/materi-berkas/{material}', [AdminController::class, 'serveMaterialFile'])
+    ->name('materi.file');

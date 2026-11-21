@@ -43,13 +43,13 @@ class GoogleLoginTest extends TestCase
 
     public function test_email_admin_google_langsung_masuk_ruang_admin(): void
     {
-        $this->fakeGoogleUser('g-admin-1', 'haqiqihf@gmail.com', 'Haqiqih');
+        $this->fakeGoogleUser('g-admin-1', 'hesnimaharani31@gmail.com', 'Hesni Maharani');
 
         $this->get('/auth/google/callback')
             ->assertRedirect(route('admin.dashboard'));
 
         $this->assertDatabaseHas('users', [
-            'email' => 'haqiqihf@gmail.com',
+            'email' => 'hesnimaharani31@gmail.com',
             'google_id' => 'g-admin-1',
             'role' => 'admin',
         ]);

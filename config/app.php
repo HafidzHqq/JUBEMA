@@ -49,8 +49,8 @@ return [
         // Kredensial akun Guru BK (Admin) yang dibuat oleh AdminUserSeeder.
         // Tambahkan kunci ini di config supaya tetap aman ketika
         // `php artisan config:cache` dijalankan di server produksi.
-        'admin_name' => env('JUBEMA_ADMIN_NAME', 'Haqiqih'),
-        'admin_email' => env('JUBEMA_ADMIN_EMAIL', 'haqiqihf@gmail.com'),
+        'admin_name' => env('JUBEMA_ADMIN_NAME', 'Hesni Maharani'),
+        'admin_email' => env('JUBEMA_ADMIN_EMAIL', 'hesnimaharani31@gmail.com'),
         'admin_password' => env('JUBEMA_ADMIN_PASSWORD', 'Rani010806'),
 
         // Daftar email Google yang boleh masuk sebagai Admin BK lewat

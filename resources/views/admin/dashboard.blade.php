@@ -9,21 +9,25 @@
 @endphp
 
 {{-- Pembuka Halaman --}}
-<section class="grid lg:grid-cols-12 gap-8 pb-10 border-b border-ink items-end">
+<section class="grid lg:grid-cols-12 gap-5 sm:gap-8 pb-7 sm:pb-10 border-b border-ink items-end">
     <div class="lg:col-span-8">
-        <p class="text-sm text-ink-faint mb-3">Ruang Guru BK · Pemantauan Kelas VII–IX</p>
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+        <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Ruang Guru BK · Pemantauan Kelas VII–IX</p>
+        <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
             Rekap aktivitas <span class="marker italic">belajar siswa.</span>
         </h1>
-        <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+        <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
             Pantau rencana tugas, ketuntasan langkah harian, dan catatan refleksi yang dibagikan siswa
             sebelum tugas mereka terlanjur menumpuk.
         </p>
     </div>
-    <div class="lg:col-span-4 lg:text-right">
+    <div class="lg:col-span-4 grid grid-cols-2 sm:flex sm:flex-wrap lg:justify-end items-center gap-2.5 sm:gap-3 no-print">
+        <button type="button" onclick="window.print()"
+                class="px-4 py-3 rounded-md border border-rule bg-sheet hover:border-ink text-ink text-xs sm:text-sm font-medium text-center transition-colors">
+            Cetak / PDF
+        </button>
         <a href="{{ route('admin.export.master') }}"
-           class="inline-block px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-sm font-semibold transition-colors">
-            Ekspor Master Spreadsheet (.CSV) ↓
+           class="px-4 sm:px-5 py-3 rounded-md bg-ink hover:bg-black text-sheet text-xs sm:text-sm font-semibold text-center transition-colors">
+            Unduh Excel (.xlsx) ↓
         </a>
     </div>
 </section>
@@ -31,32 +35,32 @@
 {{-- Strip 4 Metrik Utama di atas Lembar Jurnal --}}
 <section class="bg-sheet border-b border-x border-rule">
     <dl class="grid grid-cols-2 lg:grid-cols-4">
-        <div class="p-6 sm:p-8 border-r border-b lg:border-b-0 border-rule">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Siswa &amp; Rencana</dt>
-            <dd class="mt-3 flex items-baseline gap-2.5">
-                <span class="font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $totalTasks }}</span>
-                <span class="text-xs text-ink-soft">tugas ({{ $grouped->count() }} siswa)</span>
+        <div class="p-4 sm:p-8 border-r border-b lg:border-b-0 border-rule">
+            <dt class="text-[11px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Siswa &amp; Rencana</dt>
+            <dd class="mt-2 sm:mt-3 flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
+                <span class="font-serif text-3xl sm:text-5xl text-ink leading-none">{{ $totalTasks }}</span>
+                <span class="text-[11px] sm:text-xs text-ink-soft">tugas ({{ $grouped->count() }} siswa)</span>
             </dd>
         </div>
-        <div class="p-6 sm:p-8 lg:border-r border-b lg:border-b-0 border-rule">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Tugas Selesai</dt>
-            <dd class="mt-3 flex items-baseline gap-2.5">
-                <span class="font-serif text-4xl sm:text-5xl text-accent leading-none">{{ $doneTasks }}</span>
-                <span class="text-xs text-ink-soft">({{ $completionRate }}% tuntas)</span>
+        <div class="p-4 sm:p-8 lg:border-r border-b lg:border-b-0 border-rule">
+            <dt class="text-[11px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Tugas Selesai</dt>
+            <dd class="mt-2 sm:mt-3 flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
+                <span class="font-serif text-3xl sm:text-5xl text-accent leading-none">{{ $doneTasks }}</span>
+                <span class="text-[11px] sm:text-xs text-ink-soft">({{ $completionRate }}% tuntas)</span>
             </dd>
         </div>
-        <div class="p-6 sm:p-8 border-r border-rule">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Refleksi Mingguan</dt>
-            <dd class="mt-3 flex items-baseline gap-2.5">
-                <span class="font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $reflections->count() }}</span>
-                <span class="text-xs text-ink-soft">{{ $sharedReflections->count() }} dibagikan</span>
+        <div class="p-4 sm:p-8 border-r border-rule">
+            <dt class="text-[11px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Refleksi Mingguan</dt>
+            <dd class="mt-2 sm:mt-3 flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
+                <span class="font-serif text-3xl sm:text-5xl text-ink leading-none">{{ $reflections->count() }}</span>
+                <span class="text-[11px] sm:text-xs text-ink-soft">{{ $sharedReflections->count() }} dibagikan</span>
             </dd>
         </div>
-        <div class="p-6 sm:p-8">
-            <dt class="text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Konsultasi Masuk</dt>
-            <dd class="mt-3 flex items-baseline gap-2.5">
-                <span class="font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $consultations->count() }}</span>
-                <span class="text-xs text-ink-soft">{{ $consultations->where('status', 'sudah_dijadwalkan')->count() }} terjadwal</span>
+        <div class="p-4 sm:p-8">
+            <dt class="text-[11px] sm:text-xs font-medium text-ink-faint uppercase tracking-[0.12em]">Konsultasi Masuk</dt>
+            <dd class="mt-2 sm:mt-3 flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
+                <span class="font-serif text-3xl sm:text-5xl text-ink leading-none">{{ $consultations->count() }}</span>
+                <span class="text-[11px] sm:text-xs text-ink-soft">{{ $consultations->where('status', 'sudah_dijadwalkan')->count() }} terjadwal</span>
             </dd>
         </div>
     </dl>
@@ -81,7 +85,34 @@
                 <p class="text-sm text-ink-faint mt-1">Data akan otomatis muncul saat siswa mulai mengisi menu Perencana.</p>
             </div>
         @else
-            <div class="overflow-x-auto flex-1">
+            {{-- Tampilan Kartu Khusus Mobile (< sm) --}}
+            <div class="sm:hidden divide-y divide-rule flex-1">
+                @foreach ($tasks as $task)
+                    <article class="p-5 space-y-2.5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="font-semibold text-sm text-ink">{{ $task->student?->name }}</p>
+                                <p class="text-xs text-ink-faint">{{ $task->student?->kelas }}</p>
+                            </div>
+                            @if ($task->completed)
+                                <span class="px-2.5 py-0.5 rounded bg-accent/10 text-accent text-xs font-semibold shrink-0">Selesai</span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded bg-[#F9DD7A]/50 text-ink text-xs font-medium shrink-0">Berproses</span>
+                            @endif
+                        </div>
+                        <p class="font-serif text-lg font-medium text-ink leading-snug">{{ $task->title }}</p>
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs text-ink-soft">
+                            <span class="px-2 py-0.5 rounded bg-ink text-sheet font-semibold">{{ $task->day }}</span>
+                            <span class="font-medium text-ink">{{ $task->subject }}</span>
+                            <span class="text-ink-faint">· {{ $task->time }}</span>
+                            <span class="text-ink-faint">· {{ $task->priority }}</span>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            {{-- Tampilan Tabel Desktop (sm ke atas) --}}
+            <div class="hidden sm:block overflow-x-auto flex-1">
                 <table class="w-full text-sm">
                     <thead class="bg-paper/60 border-b border-rule text-left text-xs text-ink-faint">
                         <tr>

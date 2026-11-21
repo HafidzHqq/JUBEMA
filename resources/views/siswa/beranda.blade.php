@@ -4,47 +4,47 @@
 
 @section('content')
 {{-- Pembuka Beranda: Grid 12 kolom selaras dengan landing page --}}
-<section class="grid xl:grid-cols-12 gap-8 xl:gap-10 pb-10 border-b border-ink items-end">
+<section class="grid xl:grid-cols-12 gap-6 xl:gap-10 pb-7 sm:pb-10 border-b border-ink items-end">
     <div class="xl:col-span-7">
-        <p class="text-sm text-ink-faint mb-3">{{ $student->kelas }} · Jurnal Belajar Mandiri</p>
+        <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">{{ $student->kelas }} · Jurnal Belajar Mandiri</p>
 
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+        <h1 class="font-serif text-[2.1rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
             Halo, <span class="marker italic">{{ $student->name }}.</span>
         </h1>
 
-        <p class="mt-5 text-base sm:text-lg text-ink-soft leading-relaxed max-w-xl">
+        <p class="mt-3.5 sm:mt-5 text-[15px] sm:text-lg text-ink-soft leading-relaxed max-w-xl">
             Setiap langkah kecil yang kamu rencanakan hari ini membantu mengurangi rasa kewalahan saat
             tugas menumpuk. Mulai dari satu tugas yang paling dekat tenggatnya.
         </p>
 
-        <div class="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+        <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-x-7 sm:gap-y-4">
             <a href="{{ route('siswa.perencana') }}"
-               class="px-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-sheet text-sm font-semibold transition-colors">
+               class="px-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-sheet text-sm font-semibold text-center transition-colors">
                 Tambah Rencana Tugas
             </a>
             <a href="{{ route('siswa.ceklis') }}"
-               class="text-sm font-medium text-ink underline underline-offset-[6px] decoration-rule hover:decoration-ink">
+               class="py-2 sm:py-0 text-sm font-medium text-ink text-center sm:text-left underline underline-offset-[6px] decoration-rule hover:decoration-ink">
                 Buka ceklis hari ini →
             </a>
         </div>
     </div>
 
-    <div class="xl:col-span-4 xl:col-start-9 bg-sheet border border-rule p-6 sm:p-7">
+    <div class="xl:col-span-4 xl:col-start-9 bg-sheet border border-rule p-5 sm:p-7">
         <p class="text-xs font-medium uppercase tracking-[0.12em] text-ink-faint">Kemajuan Minggu Ini</p>
-        <div class="mt-3 flex items-baseline gap-2.5">
-            <span class="font-serif text-5xl text-ink leading-none">{{ $doneTasks }}</span>
+        <div class="mt-2.5 sm:mt-3 flex items-baseline gap-2.5">
+            <span class="font-serif text-4xl sm:text-5xl text-ink leading-none">{{ $doneTasks }}</span>
             <span class="text-sm text-ink-soft">dari {{ $totalTasks }} tugas selesai</span>
         </div>
-        <div class="w-full bg-paper h-1.5 mt-5 overflow-hidden">
+        <div class="w-full bg-paper h-1.5 mt-4 sm:mt-5 overflow-hidden">
             <div class="bg-accent h-full transition-all duration-500" style="width: {{ $progressPercent }}%"></div>
         </div>
-        <p class="mt-3 text-xs text-ink-faint">{{ $progressPercent }}% rencana mingguan tercapai</p>
+        <p class="mt-2.5 sm:mt-3 text-xs text-ink-faint">{{ $progressPercent }}% rencana mingguan tercapai</p>
     </div>
 </section>
 
 {{-- Lembar Jurnal: Siklus 4 langkah di atas permukaan bg-sheet --}}
-<section class="mt-10 bg-sheet border border-rule p-6 sm:p-9 xl:p-11">
-    <div class="grid xl:grid-cols-12 gap-6 mb-9">
+<section class="mt-7 sm:mt-10 bg-sheet border border-rule p-5 sm:p-9 xl:p-11">
+    <div class="grid xl:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-9">
         <h2 class="xl:col-span-5 font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink">
             Siklus belajar mingguanmu
         </h2>

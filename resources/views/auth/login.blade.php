@@ -217,8 +217,9 @@
      POP UP: Nama Panggilan + Kelas (muncul SETELAH login Google)
      ============================================================ --}}
 @if ($pendingGoogle)
-    <div id="profile-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-sm">
-        <div class="w-full max-w-md bg-sheet border border-rule rounded-xl shadow-xl overflow-hidden max-h-[92vh] overflow-y-auto p-6 sm:p-8">
+    <div id="profile-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/60 backdrop-blur-sm">
+        <div class="w-full max-w-md bg-sheet border-t sm:border border-rule rounded-t-2xl sm:rounded-xl shadow-xl overflow-hidden max-h-[92dvh] overflow-y-auto p-6 sm:p-8">
+            <div class="w-10 h-1 bg-rule rounded-full mx-auto mb-4 sm:hidden" aria-hidden="true"></div>
 
             <div class="pb-5 border-b border-rule">
                 <p class="text-xs text-ink-faint">Masuk sebagai {{ $pendingGoogle['email'] ?? '-' }}</p>

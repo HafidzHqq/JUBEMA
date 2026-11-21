@@ -4,19 +4,19 @@
 
 @section('content')
 {{-- Pembuka Halaman: Selaras dengan gaya editorial Beranda & Perencana --}}
-<section class="pb-10 border-b border-ink">
-    <p class="text-sm text-ink-faint mb-3">Langkah 3 · Refleksi Diri</p>
-    <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight leading-[1.06] text-ink">
+<section class="pb-7 sm:pb-10 border-b border-ink">
+    <p class="text-xs sm:text-sm text-ink-faint mb-2 sm:mb-3">Langkah 3 · Refleksi Diri</p>
+    <h1 class="font-serif text-[2rem] sm:text-5xl font-medium tracking-tight leading-[1.08] sm:leading-[1.06] text-ink">
         Refleksi <span class="marker italic">akhir minggu.</span>
     </h1>
-    <p class="mt-4 text-base text-ink-soft max-w-2xl leading-relaxed">
+    <p class="mt-3 sm:mt-4 text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
         Lihat ke belakang sebentar: apa yang berhasil minggu ini, apa yang mengganggu fokusmu, dan
         satu langkah kecil yang mau dicoba minggu depan.
     </p>
 </section>
 
 {{-- Grid 2 Kolom Simetris: Header, garis pemisah, dan tinggi kartu sejajar --}}
-<div class="mt-10 grid xl:grid-cols-12 gap-8 items-stretch">
+<div class="mt-7 sm:mt-10 grid xl:grid-cols-12 gap-6 sm:gap-8 items-stretch">
 
     {{-- Kolom Kiri (6 kolom): Formulir Refleksi --}}
     <section class="xl:col-span-6 bg-sheet border border-rule flex flex-col">
@@ -119,20 +119,30 @@
             <div class="divide-y divide-rule flex-1">
                 @foreach ($reflections as $ref)
                     <article class="p-6 sm:p-8 space-y-3.5">
-                        <div class="flex flex-wrap items-baseline justify-between gap-2">
-                            <h3 class="font-serif text-2xl font-medium text-ink">{{ $ref->week }}</h3>
-                            <span class="px-2.5 py-0.5 rounded bg-accent/10 text-accent text-xs font-semibold">{{ $ref->mood }}</span>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex flex-wrap items-baseline gap-2.5">
+                                <h3 class="font-serif text-2xl font-medium text-ink">{{ $ref->week }}</h3>
+                                <span class="px-2.5 py-0.5 rounded bg-accent/10 text-accent text-xs font-semibold">{{ $ref->mood }}</span>
+                            </div>
+                            <form method="POST" action="{{ route('siswa.reflections.destroy', $ref) }}"
+                                  onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus catatan refleksi '.$ref->week.'?') }});">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                        class="px-3 py-1 rounded-md border border-rule bg-paper hover:border-red-300 hover:bg-red-50 text-xs font-medium text-red-700 transition-colors">
+                                    Hapus
+                                </button>
+                            </form>
                         </div>
-                        <dl class="space-y-2.5 text-sm pt-1">
-                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2">
+                        <dl class="space-y-3 sm:space-y-2.5 text-sm pt-1">
+                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2 border-l-2 border-accent pl-3 sm:border-l-0 sm:pl-0">
                                 <dt class="sm:col-span-3 text-xs font-semibold text-accent pt-0.5">Berhasil</dt>
                                 <dd class="sm:col-span-9 text-ink-soft leading-relaxed">{{ $ref->good }}</dd>
                             </div>
-                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2">
+                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2 border-l-2 border-rule pl-3 sm:border-l-0 sm:pl-0">
                                 <dt class="sm:col-span-3 text-xs font-semibold text-ink-faint pt-0.5">Hambatan</dt>
                                 <dd class="sm:col-span-9 text-ink-soft leading-relaxed">{{ $ref->obstacle }}</dd>
                             </div>
-                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2">
+                            <div class="grid sm:grid-cols-12 gap-1 sm:gap-2 border-l-2 border-ink pl-3 sm:border-l-0 sm:pl-0">
                                 <dt class="sm:col-span-3 text-xs font-semibold text-ink pt-0.5">Rencana</dt>
                                 <dd class="sm:col-span-9 text-ink leading-relaxed">{{ $ref->plan }}</dd>
                             </div>
